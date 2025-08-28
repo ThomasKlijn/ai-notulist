@@ -1,6 +1,9 @@
-modules = ["nodejs-18"]
+modules = ["nodejs-20"]
 run = "cd web && npm run dev"
 
 [[ports]]
 localPort = 3000
 externalPort = 80
+
+[nix]
+channel = "stable-25_05"
