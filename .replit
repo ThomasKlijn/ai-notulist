@@ -1,0 +1,6 @@
+modules = ["nodejs-18"]
+run = "cd web && npm run dev"
+
+[[ports]]
+localPort = 3000
+externalPort = 80
