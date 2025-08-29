@@ -1,5 +1,5 @@
-modules = ["nodejs-20"]
-run = "cd web && npm run dev"
+modules = ["nodejs-18"]
+run = "bash -lc 'cd web && npm run dev'"
 
 [[ports]]
 localPort = 3000
