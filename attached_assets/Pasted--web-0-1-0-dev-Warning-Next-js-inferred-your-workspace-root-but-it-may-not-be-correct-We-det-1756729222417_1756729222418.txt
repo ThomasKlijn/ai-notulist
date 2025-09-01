@@ -1,0 +1,49 @@
+> web@0.1.0 dev
+ ⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of /home/runner/workspace/package-lock.json as the root directory.
+ To silence this warning, set `turbopack.root` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory for more information.
+ Detected additional lockfiles: 
+   * /home/runner/workspace/web/package-lock.json
+
+   ▲ Next.js 15.5.2 (Turbopack)
+   - Local:        http://localhost:5000
+   - Network:      http://0.0.0.0:5000
+
+ ✓ Starting...
+ ✓ Ready in 1869ms
+ ○ Compiling / ...
+ ✓ Compiled / in 4s
+ GET / 200 in 4478ms
+ GET / 200 in 135ms
+ ⚠ Cross origin request detected from f8e531de-ca40-43ab-ada5-a57db37728a0-00-3ejcq8kl3xt9g.picard.replit.dev to /_next/* resource. In a future major version of Next.js, you will need to explicitly configure "allowedDevOrigins" in next.config to allow this.
+Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
+ ✓ Compiled /meetings/new in 509ms
+ ⨯ ./web/app/meetings/new/page.tsx:4:1
+Module not found: Can't resolve '@/components/AttendeesInput'
+  2 | import { useRouter } from 'next/navigation';
+  3 | import { useState } from 'react';
+> 4 | import AttendeesInput from '@/components/AttendeesInput';
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 |
+  6 | type Attendee = { name?: string; email: string };
+  7 |
+
+Import map: aliased to relative './src/components/AttendeesInput' inside of [project]/web
+
+
+Import traces:
+  Client Component Browser:
+    ./web/app/meetings/new/page.tsx [Client Component Browser]
+    ./web/app/meetings/new/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./web/app/meetings/new/page.tsx [Client Component SSR]
+    ./web/app/meetings/new/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 1921ms
+ GET /meetings/new 500 in 2754ms

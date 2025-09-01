@@ -1,7 +1,7 @@
 'use client';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import AttendeesInput from '@/components/AttendeesInput';
+import AttendeesInput from '../../../components/AttendeesInput';
 
 type Attendee = { name?: string; email: string };
 
