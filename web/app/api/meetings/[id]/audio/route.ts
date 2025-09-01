@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { storage } from '../../../../server/storage';
+import { storage } from '../../../../../server/storage';
 
 export const runtime = 'nodejs'; // nodig voor FormData parsing
 
@@ -26,7 +26,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     const buf = Buffer.from(await file.arrayBuffer());
     
     // Upload to object storage
-    const { ObjectStorageService } = await import('../../../../server/objectStorage');
+    const { ObjectStorageService } = await import('../../../../../server/objectStorage');
     const objectStorageService = new ObjectStorageService();
     const objectPath = await objectStorageService.uploadAudioChunk(
       params.id, 

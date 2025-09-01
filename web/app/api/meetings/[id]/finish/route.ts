@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { storage } from '../../../../server/storage';
+import { storage } from '../../../../../server/storage';
 
 export async function POST(_: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -12,7 +12,7 @@ export async function POST(_: NextRequest, { params }: { params: { id: string } 
     await storage.finishMeeting(params.id);
     
     // Trigger background processing for speech-to-text and AI summarization
-    const { processingService } = await import('../../../../server/processingService');
+    const { processingService } = await import('../../../../../server/processingService');
     
     // Process in background (don't await to avoid timeout)
     processingService.processMeeting(params.id).catch(error => {
