@@ -10,7 +10,15 @@
   "dependencies": {
     "next": "15.5.2",
     "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "react-dom": "19.1.0",
+    "@neondatabase/serverless": "^1.0.1",
+    "@sendgrid/mail": "^8.1.5", 
+    "@google-cloud/storage": "^8.0.0",
+    "drizzle-orm": "^0.44.5",
+    "drizzle-zod": "^0.8.3",
+    "openai": "^5.16.0",
+    "ws": "^8.18.3",
+    "zod": "^3.25.0"
   },
   "devDependencies": {
     "typescript": "^5",
