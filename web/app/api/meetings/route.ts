@@ -1,26 +1,46 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { Store, Meeting, Attendee } from '@/lib/store';
+import { storage } from '../../../server/storage';
+import { insertMeetingSchema, insertAttendeeSchema } from '../../../shared/schema';
+import { z } from 'zod';
+
+const createMeetingSchema = z.object({
+  title: z.string().min(1),
+  language: z.string().optional(),
+  attendees: z.array(insertAttendeeSchema).min(1)
+});
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { title, attendees, language } = body ?? {};
-    if (!title || !Array.isArray(attendees)) {
-      return NextResponse.json({ error: 'title en attendees[] verplicht' }, { status: 400 });
+    
+    // Validate request body
+    const validation = createMeetingSchema.safeParse(body);
+    if (!validation.success) {
+      return NextResponse.json({ 
+        error: 'Invalid input', 
+        details: validation.error.issues 
+      }, { status: 400 });
     }
+
+    const { title, attendees, language } = validation.data;
+    
     const id = crypto.randomUUID();
-    const m: Meeting = {
+    const meetingData = {
       id,
       title,
       language: language ?? 'nl',
-      createdAt: new Date().toISOString(),
-      status: 'recording',
-      attendees: attendees.filter((a: Attendee) => a?.email),
-      chunksReceived: 0,
+      status: 'recording' as const
     };
-    Store.createMeeting(m);
-    return NextResponse.json({ id });
+
+    // Create meeting with attendees
+    const meeting = await storage.createMeeting(
+      meetingData, 
+      attendees.filter(a => a?.email)
+    );
+    
+    return NextResponse.json({ id: meeting.id });
   } catch (e: any) {
+    console.error('Error creating meeting:', e);
     return NextResponse.json({ error: e?.message ?? 'onbekende fout' }, { status: 500 });
   }
 }

@@ -1,4 +1,4 @@
-modules = ["nodejs-18"]
+modules = ["nodejs-20", "postgresql-16"]
 run = "bash -lc 'cd web && npm run dev'"
 
 [[ports]]
@@ -11,3 +11,6 @@ externalPort = 5000
 
 [nix]
 channel = "stable-25_05"
+
+[agent]
+integrations = ["javascript_sendgrid==1.0.0", "javascript_openai==1.0.0", "javascript_object_storage==1.0.0", "javascript_database==1.0.0"]
