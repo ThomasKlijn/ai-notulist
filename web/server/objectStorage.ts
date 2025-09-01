@@ -1,5 +1,4 @@
 import { Storage, File } from "@google-cloud/storage";
-import { Response } from "express";
 import { randomUUID } from "crypto";
 
 const REPLIT_SIDECAR_ENDPOINT = "http://127.0.0.1:1106";
