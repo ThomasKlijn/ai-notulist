@@ -1,4 +1,4 @@
-run = "cd web && npm run dev"
+run = "python3 run.py"
 
 [deployment]
 run = "cd web && npm run start"
