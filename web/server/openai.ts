@@ -103,10 +103,10 @@ Transcriptie: ${transcription}`;
       response_format: { type: "json_object" },
     });
 
-    const result = JSON.parse(response.choices[0].message.content);
+    const result = JSON.parse(response.choices[0].message.content || '{}');
     return result as MeetingSummary;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error generating meeting summary:', error);
-    throw new Error('Failed to generate meeting summary: ' + error.message);
+    throw new Error('Failed to generate meeting summary: ' + (error?.message || error));
   }
 }
