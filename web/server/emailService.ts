@@ -38,7 +38,7 @@ export class EmailService {
       const emailPromises = attendees.map(attendee => 
         mailService.send({
           to: attendee.email,
-          from: process.env.FROM_EMAIL || 'noreply@notulist.com', // Default sender
+          from: 'ai-notulist@replit.app', // Use a verified sender domain
           subject: subject,
           text: textContent,
           html: htmlContent,

@@ -30,6 +30,24 @@ export default function MeetingRecordPage() {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const statusCheckRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Start timer when recording starts
+  useEffect(() => {
+    if (recording) {
+      timerRef.current = setInterval(() => {
+        setSeconds(prev => prev + 1);
+      }, 1000);
+    } else {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    }
+
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [recording]);
+
   useEffect(() => {
     return () => { 
       if (timerRef.current) clearInterval(timerRef.current); 
@@ -82,8 +100,9 @@ export default function MeetingRecordPage() {
       };
 
       rec.start(15000); // elke 15s een chunk
-      setRecorder(rec); setRecording(true); setSeconds(0);
-      timerRef.current = setInterval(() => setSeconds(s => s + 1), 1000);
+      setRecorder(rec); 
+      setSeconds(0);
+      setRecording(true); // Timer starts via useEffect
     } catch (err: any) {
       alert('Microfoon-toegang geweigerd of niet beschikbaar.');
       console.error(err);
