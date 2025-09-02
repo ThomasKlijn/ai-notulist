@@ -13,4 +13,4 @@ externalPort = 5000
 channel = "stable-25_05"
 
 [agent]
-integrations = ["javascript_openai==1.0.0", "javascript_sendgrid==1.0.0", "javascript_object_storage==1.0.0", "javascript_database==1.0.0"]
+integrations = ["javascript_openai==1.0.0", "javascript_database==1.0.0", "javascript_object_storage==1.0.0", "javascript_sendgrid==1.0.0"]

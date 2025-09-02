@@ -23,13 +23,20 @@ export class MeetingProcessingService {
       // Update status to processing
       await storage.updateMeeting(meetingId, { status: 'processing' });
 
-      // Combine all audio chunks
-      console.log('Combining audio chunks...');
-      const combinedAudio = await this.objectStorage.combineAudioChunks(meetingId);
+      // Get first audio chunk for transcription (WebM chunks can't be simply concatenated)
+      console.log('Getting first audio chunk for transcription...');
+      const audioChunks = await storage.getAudioChunks(meetingId);
+      if (audioChunks.length === 0) {
+        throw new Error('No audio chunks found for transcription');
+      }
+      
+      // Use first chunk for transcription
+      const firstChunk = audioChunks[0];
+      const audioBuffer = await this.objectStorage.downloadAudioChunk(firstChunk.objectPath);
       
       // Transcribe audio
-      console.log('Transcribing audio...');
-      const transcription = await transcribeAudio(combinedAudio, meeting.language || 'nl');
+      console.log('Transcribing first audio chunk...');
+      const transcription = await transcribeAudio(audioBuffer, meeting.language || 'nl');
       
       // Generate summary
       console.log('Generating AI summary...');

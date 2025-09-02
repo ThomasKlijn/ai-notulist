@@ -3,8 +3,9 @@ import { storage } from '../../../../../server/storage';
 
 export const runtime = 'nodejs'; // nodig voor FormData parsing
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
-  const meeting = await storage.getMeeting(params.id);
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const meeting = await storage.getMeeting(id);
   if (!meeting) {
     return NextResponse.json({ error: 'meeting niet gevonden' }, { status: 404 });
   }
@@ -29,7 +30,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     const { ObjectStorageService } = await import('../../../../../server/objectStorage');
     const objectStorageService = new ObjectStorageService();
     const objectPath = await objectStorageService.uploadAudioChunk(
-      params.id, 
+      id, 
       parseInt(chunkIndex), 
       buf
     );
@@ -38,7 +39,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     const filename = `chunk-${chunkIndex}.webm`;
     
     await storage.addAudioChunk({
-      meetingId: params.id,
+      meetingId: id,
       chunkIndex: parseInt(chunkIndex),
       filename,
       sizeBytes: buf.length,

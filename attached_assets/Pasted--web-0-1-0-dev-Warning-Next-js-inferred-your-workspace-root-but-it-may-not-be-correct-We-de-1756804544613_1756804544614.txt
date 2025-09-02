@@ -1,0 +1,423 @@
+
+> web@0.1.0 dev
+ ⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of /home/runner/workspace/package-lock.json as the root directory.
+ To silence this warning, set `turbopack.root` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory for more information.
+ Detected additional lockfiles: 
+   * /home/runner/workspace/web/package-lock.json
+
+   ▲ Next.js 15.5.2 (Turbopack)
+   - Local:        http://localhost:5000
+   - Network:      http://0.0.0.0:5000
+
+ ✓ Starting...
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
+
+ ✓ Ready in 1813ms
+ ○ Compiling / ...
+ ✓ Compiled / in 4.8s
+ GET / 200 in 5377ms
+ GET / 200 in 162ms
+ ⚠ Cross origin request detected from f8e531de-ca40-43ab-ada5-a57db37728a0-00-3ejcq8kl3xt9g.picard.replit.dev to /_next/* resource. In a future major version of Next.js, you will need to explicitly configure "allowedDevOrigins" in next.config to allow this.
+Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
+ ✓ Compiled /meetings/new in 404ms
+ GET /meetings/new 200 in 561ms
+ ○ Compiling /api/meetings ...
+ ✓ Compiled /api/meetings in 1275ms
+ POST /api/meetings 200 in 2422ms
+ ✓ Compiled /meetings/[id] in 338ms
+ GET /meetings/9e606d09-c92c-47a4-a39b-22a50350b96b 200 in 1000ms
+ ○ Compiling /api/meetings/[id]/audio ...
+ ✓ Compiled /api/meetings/[id]/audio in 1109ms
+Error: Route "/api/meetings/[id]/audio" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at POST (app/api/meetings/[id]/audio/route.ts:7:51)
+   5 |
+   6 | export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+>  7 |   const meeting = await storage.getMeeting(params.id);
+     |                                                   ^
+   8 |   if (!meeting) {
+   9 |     return NextResponse.json({ error: 'meeting niet gevonden' }, { status: 404 });
+  10 |   }
+Error: Route "/api/meetings/[id]/audio" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at POST (app/api/meetings/[id]/audio/route.ts:32:14)
+  30 |     const objectStorageService = new ObjectStorageService();
+  31 |     const objectPath = await objectStorageService.uploadAudioChunk(
+> 32 |       params.id, 
+     |              ^
+  33 |       parseInt(chunkIndex), 
+  34 |       buf
+  35 |     );
+Error: Route "/api/meetings/[id]/audio" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at POST (app/api/meetings/[id]/audio/route.ts:41:25)
+  39 |     
+  40 |     await storage.addAudioChunk({
+> 41 |       meetingId: params.id,
+     |                         ^
+  42 |       chunkIndex: parseInt(chunkIndex),
+  43 |       filename,
+  44 |       sizeBytes: buf.length,
+ POST /api/meetings/9e606d09-c92c-47a4-a39b-22a50350b96b/audio 200 in 3345ms
+Error: Route "/api/meetings/[id]/audio" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at POST (app/api/meetings/[id]/audio/route.ts:7:51)
+   5 |
+   6 | export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+>  7 |   const meeting = await storage.getMeeting(params.id);
+     |                                                   ^
+   8 |   if (!meeting) {
+   9 |     return NextResponse.json({ error: 'meeting niet gevonden' }, { status: 404 });
+  10 |   }
+Error: Route "/api/meetings/[id]/audio" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at POST (app/api/meetings/[id]/audio/route.ts:32:14)
+  30 |     const objectStorageService = new ObjectStorageService();
+  31 |     const objectPath = await objectStorageService.uploadAudioChunk(
+> 32 |       params.id, 
+     |              ^
+  33 |       parseInt(chunkIndex), 
+  34 |       buf
+  35 |     );
+Error: Route "/api/meetings/[id]/audio" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at POST (app/api/meetings/[id]/audio/route.ts:41:25)
+  39 |     
+  40 |     await storage.addAudioChunk({
+> 41 |       meetingId: params.id,
+     |                         ^
+  42 |       chunkIndex: parseInt(chunkIndex),
+  43 |       filename,
+  44 |       sizeBytes: buf.length,
+ POST /api/meetings/9e606d09-c92c-47a4-a39b-22a50350b96b/audio 200 in 1248ms
+Error: Route "/api/meetings/[id]/audio" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at POST (app/api/meetings/[id]/audio/route.ts:7:51)
+   5 |
+   6 | export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+>  7 |   const meeting = await storage.getMeeting(params.id);
+     |                                                   ^
+   8 |   if (!meeting) {
+   9 |     return NextResponse.json({ error: 'meeting niet gevonden' }, { status: 404 });
+  10 |   }
+ ○ Compiling /api/meetings/[id]/finish ...
+Error: Route "/api/meetings/[id]/audio" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at POST (app/api/meetings/[id]/audio/route.ts:32:14)
+  30 |     const objectStorageService = new ObjectStorageService();
+  31 |     const objectPath = await objectStorageService.uploadAudioChunk(
+> 32 |       params.id, 
+     |              ^
+  33 |       parseInt(chunkIndex), 
+  34 |       buf
+  35 |     );
+Error: Route "/api/meetings/[id]/audio" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at POST (app/api/meetings/[id]/audio/route.ts:41:25)
+  39 |     
+  40 |     await storage.addAudioChunk({
+> 41 |       meetingId: params.id,
+     |                         ^
+  42 |       chunkIndex: parseInt(chunkIndex),
+  43 |       filename,
+  44 |       sizeBytes: buf.length,
+ POST /api/meetings/9e606d09-c92c-47a4-a39b-22a50350b96b/audio 200 in 1011ms
+ ✓ Compiled /api/meetings/[id]/finish in 1395ms
+Error: Route "/api/meetings/[id]/finish" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at POST (app/api/meetings/[id]/finish/route.ts:6:53)
+  4 | export async function POST(_: NextRequest, { params }: { params: { id: string } }) {
+  5 |   try {
+> 6 |     const meeting = await storage.getMeeting(params.id);
+    |                                                     ^
+  7 |     if (!meeting) {
+  8 |       return NextResponse.json({ error: 'meeting niet gevonden' }, { status: 404 });
+  9 |     }
+Error: Route "/api/meetings/[id]/finish" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at POST (app/api/meetings/[id]/finish/route.ts:12:40)
+  10 |
+  11 |     // Mark meeting as finished and set processing status
+> 12 |     await storage.finishMeeting(params.id);
+     |                                        ^
+  13 |     
+  14 |     // Trigger background processing for speech-to-text and AI summarization
+  15 |     const { processingService } = await import('../../../../../server/processingService');
+Error: Route "/api/meetings/[id]/finish" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at POST (app/api/meetings/[id]/finish/route.ts:18:45)
+  16 |     
+  17 |     // Process in background (don't await to avoid timeout)
+> 18 |     processingService.processMeeting(params.id).catch(error => {
+     |                                             ^
+  19 |       console.error(`Background processing failed for meeting ${params.id}:`, error);
+  20 |     });
+  21 |     
+Starting processing for meeting 9e606d09-c92c-47a4-a39b-22a50350b96b
+ POST /api/meetings/9e606d09-c92c-47a4-a39b-22a50350b96b/finish 200 in 2857ms
+Combining audio chunks...
+Transcribing audio...
+ ✓ Compiled /api/meetings/[id]/status in 238ms
+Error: Route "/api/meetings/[id]/status" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at GET (app/api/meetings/[id]/status/route.ts:6:66)
+  4 | export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+  5 |   try {
+> 6 |     const meeting = await storage.getMeetingWithAttendees(params.id);
+    |                                                                  ^
+  7 |     if (!meeting) {
+  8 |       return NextResponse.json({ error: 'meeting niet gevonden' }, { status: 404 });
+  9 |     }
+Error: Route "/api/meetings/[id]/status" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at GET (app/api/meetings/[id]/status/route.ts:12:61)
+  10 |
+  11 |     // Get audio chunks count
+> 12 |     const audioChunks = await storage.getAudioChunks(params.id);
+     |                                                             ^
+  13 |
+  14 |     return NextResponse.json({
+  15 |       meeting: {
+ GET /api/meetings/9e606d09-c92c-47a4-a39b-22a50350b96b/status 200 in 1561ms
+Error transcribing audio: Error: 400 Invalid file format. Supported formats: ['flac', 'm4a', 'mp3', 'mp4', 'mpeg', 'mpga', 'oga', 'ogg', 'wav', 'webm']
+    at APIError.generate (src/error.ts:72:14)
+    at OpenAI.makeStatusError (src/core.ts:462:21)
+    at OpenAI.makeRequest (src/core.ts:526:24)
+    at async transcribeAudio (server/openai.ts:27:27)
+    at async MeetingProcessingService.processMeeting (server/processingService.ts:32:29)
+  25 |     const audioFile = new File([audioBlob], 'recording.webm', { type: 'audio/webm' });
+  26 |
+> 27 |     const transcription = await openai.audio.transcriptions.create({
+     |                           ^
+  28 |       file: audioFile,
+  29 |       model: "whisper-1",
+  30 |       language: language === 'nl' ? 'nl' : 'en', // Support Dutch and English {
+  status: 400,
+  headers: [Object],
+  request_id: 'req_f6340ba06ea94e0d91233b933f50f896',
+  error: [Object],
+  code: null,
+  param: null,
+  type: 'invalid_request_error'
+}
+Error processing meeting 9e606d09-c92c-47a4-a39b-22a50350b96b: Error: Failed to transcribe audio: 400 Invalid file format. Supported formats: ['flac', 'm4a', 'mp3', 'mp4', 'mpeg', 'mpga', 'oga', 'ogg', 'wav', 'webm']
+    at transcribeAudio (server/openai.ts:36:11)
+    at async MeetingProcessingService.processMeeting (server/processingService.ts:32:29)
+  34 |   } catch (error) {
+  35 |     console.error('Error transcribing audio:', error);
+> 36 |     throw new Error('Failed to transcribe audio: ' + error.message);
+     |           ^
+  37 |   }
+  38 | }
+  39 |
+Error: Route "/api/meetings/[id]/finish" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at <unknown> (app/api/meetings/[id]/finish/route.ts:19:72)
+  17 |     // Process in background (don't await to avoid timeout)
+  18 |     processingService.processMeeting(params.id).catch(error => {
+> 19 |       console.error(`Background processing failed for meeting ${params.id}:`, error);
+     |                                                                        ^
+  20 |     });
+  21 |     
+  22 |     return NextResponse.json({ ok: true });
+Background processing failed for meeting 9e606d09-c92c-47a4-a39b-22a50350b96b: Error: Failed to transcribe audio: 400 Invalid file format. Supported formats: ['flac', 'm4a', 'mp3', 'mp4', 'mpeg', 'mpga', 'oga', 'ogg', 'wav', 'webm']
+    at transcribeAudio (server/openai.ts:36:11)
+    at async MeetingProcessingService.processMeeting (server/processingService.ts:32:29)
+  34 |   } catch (error) {
+  35 |     console.error('Error transcribing audio:', error);
+> 36 |     throw new Error('Failed to transcribe audio: ' + error.message);
+     |           ^
+  37 |   }
+  38 | }
+  39 |
+Error: Route "/api/meetings/[id]/status" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at GET (app/api/meetings/[id]/status/route.ts:6:66)
+  4 | export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+  5 |   try {
+> 6 |     const meeting = await storage.getMeetingWithAttendees(params.id);
+    |                                                                  ^
+  7 |     if (!meeting) {
+  8 |       return NextResponse.json({ error: 'meeting niet gevonden' }, { status: 404 });
+  9 |     }
+Error: Route "/api/meetings/[id]/status" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at GET (app/api/meetings/[id]/status/route.ts:12:61)
+  10 |
+  11 |     // Get audio chunks count
+> 12 |     const audioChunks = await storage.getAudioChunks(params.id);
+     |                                                             ^
+  13 |
+  14 |     return NextResponse.json({
+  15 |       meeting: {
+ GET /api/meetings/9e606d09-c92c-47a4-a39b-22a50350b96b/status 200 in 619ms
+Error: Route "/api/meetings/[id]/audio" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at POST (app/api/meetings/[id]/audio/route.ts:7:51)
+   5 |
+   6 | export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+>  7 |   const meeting = await storage.getMeeting(params.id);
+     |                                                   ^
+   8 |   if (!meeting) {
+   9 |     return NextResponse.json({ error: 'meeting niet gevonden' }, { status: 404 });
+  10 |   }
+Error: Route "/api/meetings/[id]/audio" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at POST (app/api/meetings/[id]/audio/route.ts:32:14)
+  30 |     const objectStorageService = new ObjectStorageService();
+  31 |     const objectPath = await objectStorageService.uploadAudioChunk(
+> 32 |       params.id, 
+     |              ^
+  33 |       parseInt(chunkIndex), 
+  34 |       buf
+  35 |     );
+Uploading audio chunk 3 for meeting 9e606d09-c92c-47a4-a39b-22a50350b96b, size: 241294 bytes
+Full upload path: /replit-objstore-301c904b-a90e-4b1b-8286-cf4ea4c9c7ed/.private/audio/9e606d09-c92c-47a4-a39b-22a50350b96b/chunk-3.webm
+Bucket: replit-objstore-301c904b-a90e-4b1b-8286-cf4ea4c9c7ed, Object: .private/audio/9e606d09-c92c-47a4-a39b-22a50350b96b/chunk-3.webm
+Successfully uploaded chunk 3 to /replit-objstore-301c904b-a90e-4b1b-8286-cf4ea4c9c7ed/.private/audio/9e606d09-c92c-47a4-a39b-22a50350b96b/chunk-3.webm
+Error: Route "/api/meetings/[id]/audio" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at POST (app/api/meetings/[id]/audio/route.ts:41:25)
+  39 |     
+  40 |     await storage.addAudioChunk({
+> 41 |       meetingId: params.id,
+     |                         ^
+  42 |       chunkIndex: parseInt(chunkIndex),
+  43 |       filename,
+  44 |       sizeBytes: buf.length,
+ POST /api/meetings/9e606d09-c92c-47a4-a39b-22a50350b96b/audio 200 in 1925ms
+Error: Route "/api/meetings/[id]/finish" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at POST (app/api/meetings/[id]/finish/route.ts:6:53)
+  4 | export async function POST(_: NextRequest, { params }: { params: { id: string } }) {
+  5 |   try {
+> 6 |     const meeting = await storage.getMeeting(params.id);
+    |                                                     ^
+  7 |     if (!meeting) {
+  8 |       return NextResponse.json({ error: 'meeting niet gevonden' }, { status: 404 });
+  9 |     }
+Error: Route "/api/meetings/[id]/audio" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at POST (app/api/meetings/[id]/audio/route.ts:7:51)
+   5 |
+   6 | export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+>  7 |   const meeting = await storage.getMeeting(params.id);
+     |                                                   ^
+   8 |   if (!meeting) {
+   9 |     return NextResponse.json({ error: 'meeting niet gevonden' }, { status: 404 });
+  10 |   }
+Error: Route "/api/meetings/[id]/audio" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at POST (app/api/meetings/[id]/audio/route.ts:32:14)
+  30 |     const objectStorageService = new ObjectStorageService();
+  31 |     const objectPath = await objectStorageService.uploadAudioChunk(
+> 32 |       params.id, 
+     |              ^
+  33 |       parseInt(chunkIndex), 
+  34 |       buf
+  35 |     );
+Uploading audio chunk 4 for meeting 9e606d09-c92c-47a4-a39b-22a50350b96b, size: 153676 bytes
+Full upload path: /replit-objstore-301c904b-a90e-4b1b-8286-cf4ea4c9c7ed/.private/audio/9e606d09-c92c-47a4-a39b-22a50350b96b/chunk-4.webm
+Bucket: replit-objstore-301c904b-a90e-4b1b-8286-cf4ea4c9c7ed, Object: .private/audio/9e606d09-c92c-47a4-a39b-22a50350b96b/chunk-4.webm
+Error: Route "/api/meetings/[id]/finish" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at POST (app/api/meetings/[id]/finish/route.ts:12:40)
+  10 |
+  11 |     // Mark meeting as finished and set processing status
+> 12 |     await storage.finishMeeting(params.id);
+     |                                        ^
+  13 |     
+  14 |     // Trigger background processing for speech-to-text and AI summarization
+  15 |     const { processingService } = await import('../../../../../server/processingService');
+Successfully uploaded chunk 4 to /replit-objstore-301c904b-a90e-4b1b-8286-cf4ea4c9c7ed/.private/audio/9e606d09-c92c-47a4-a39b-22a50350b96b/chunk-4.webm
+Error: Route "/api/meetings/[id]/audio" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at POST (app/api/meetings/[id]/audio/route.ts:41:25)
+  39 |     
+  40 |     await storage.addAudioChunk({
+> 41 |       meetingId: params.id,
+     |                         ^
+  42 |       chunkIndex: parseInt(chunkIndex),
+  43 |       filename,
+  44 |       sizeBytes: buf.length,
+Error: Route "/api/meetings/[id]/finish" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at POST (app/api/meetings/[id]/finish/route.ts:18:45)
+  16 |     
+  17 |     // Process in background (don't await to avoid timeout)
+> 18 |     processingService.processMeeting(params.id).catch(error => {
+     |                                             ^
+  19 |       console.error(`Background processing failed for meeting ${params.id}:`, error);
+  20 |     });
+  21 |     
+Starting processing for meeting 9e606d09-c92c-47a4-a39b-22a50350b96b
+ POST /api/meetings/9e606d09-c92c-47a4-a39b-22a50350b96b/finish 200 in 1468ms
+ POST /api/meetings/9e606d09-c92c-47a4-a39b-22a50350b96b/audio 200 in 1440ms
+Combining audio chunks...
+Transcribing audio...
+Error: Route "/api/meetings/[id]/status" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at GET (app/api/meetings/[id]/status/route.ts:6:66)
+  4 | export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+  5 |   try {
+> 6 |     const meeting = await storage.getMeetingWithAttendees(params.id);
+    |                                                                  ^
+  7 |     if (!meeting) {
+  8 |       return NextResponse.json({ error: 'meeting niet gevonden' }, { status: 404 });
+  9 |     }
+Error: Route "/api/meetings/[id]/status" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at GET (app/api/meetings/[id]/status/route.ts:12:61)
+  10 |
+  11 |     // Get audio chunks count
+> 12 |     const audioChunks = await storage.getAudioChunks(params.id);
+     |                                                             ^
+  13 |
+  14 |     return NextResponse.json({
+  15 |       meeting: {
+ GET /api/meetings/9e606d09-c92c-47a4-a39b-22a50350b96b/status 200 in 845ms
+Error transcribing audio: Error: 400 Invalid file format. Supported formats: ['flac', 'm4a', 'mp3', 'mp4', 'mpeg', 'mpga', 'oga', 'ogg', 'wav', 'webm']
+    at APIError.generate (src/error.ts:72:14)
+    at OpenAI.makeStatusError (src/core.ts:462:21)
+    at OpenAI.makeRequest (src/core.ts:526:24)
+    at async transcribeAudio (server/openai.ts:27:27)
+    at async MeetingProcessingService.processMeeting (server/processingService.ts:32:29)
+  25 |     const audioFile = new File([audioBlob], 'recording.webm', { type: 'audio/webm' });
+  26 |
+> 27 |     const transcription = await openai.audio.transcriptions.create({
+     |                           ^
+  28 |       file: audioFile,
+  29 |       model: "whisper-1",
+  30 |       language: language === 'nl' ? 'nl' : 'en', // Support Dutch and English {
+  status: 400,
+  headers: [Object],
+  request_id: 'req_0a8ca7abf2c1426fbb338e0c07b22648',
+  error: [Object],
+  code: null,
+  param: null,
+  type: 'invalid_request_error'
+}
+Error processing meeting 9e606d09-c92c-47a4-a39b-22a50350b96b: Error: Failed to transcribe audio: 400 Invalid file format. Supported formats: ['flac', 'm4a', 'mp3', 'mp4', 'mpeg', 'mpga', 'oga', 'ogg', 'wav', 'webm']
+    at transcribeAudio (server/openai.ts:36:11)
+    at async MeetingProcessingService.processMeeting (server/processingService.ts:32:29)
+  34 |   } catch (error) {
+  35 |     console.error('Error transcribing audio:', error);
+> 36 |     throw new Error('Failed to transcribe audio: ' + error.message);
+     |           ^
+  37 |   }
+  38 | }
+  39 |
+Error: Route "/api/meetings/[id]/finish" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at <unknown> (app/api/meetings/[id]/finish/route.ts:19:72)
+  17 |     // Process in background (don't await to avoid timeout)
+  18 |     processingService.processMeeting(params.id).catch(error => {
+> 19 |       console.error(`Background processing failed for meeting ${params.id}:`, error);
+     |                                                                        ^
+  20 |     });
+  21 |     
+  22 |     return NextResponse.json({ ok: true });
+Background processing failed for meeting 9e606d09-c92c-47a4-a39b-22a50350b96b: Error: Failed to transcribe audio: 400 Invalid file format. Supported formats: ['flac', 'm4a', 'mp3', 'mp4', 'mpeg', 'mpga', 'oga', 'ogg', 'wav', 'webm']
+    at transcribeAudio (server/openai.ts:36:11)
+    at async MeetingProcessingService.processMeeting (server/processingService.ts:32:29)
+  34 |   } catch (error) {
+  35 |     console.error('Error transcribing audio:', error);
+> 36 |     throw new Error('Failed to transcribe audio: ' + error.message);
+     |           ^
+  37 |   }
+  38 | }
+  39 |
+Error: Route "/api/meetings/[id]/status" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at GET (app/api/meetings/[id]/status/route.ts:6:66)
+  4 | export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+  5 |   try {
+> 6 |     const meeting = await storage.getMeetingWithAttendees(params.id);
+    |                                                                  ^
+  7 |     if (!meeting) {
+  8 |       return NextResponse.json({ error: 'meeting niet gevonden' }, { status: 404 });
+  9 |     }
+Error: Route "/api/meetings/[id]/status" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at GET (app/api/meetings/[id]/status/route.ts:12:61)
+  10 |
+  11 |     // Get audio chunks count
+> 12 |     const audioChunks = await storage.getAudioChunks(params.id);
+     |                                                             ^
+  13 |
+  14 |     return NextResponse.json({
+  15 |       meeting: {

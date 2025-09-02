@@ -31,9 +31,9 @@ export async function transcribeAudio(audioBuffer: Buffer, language: string = 'n
     });
 
     return transcription.text;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error transcribing audio:', error);
-    throw new Error('Failed to transcribe audio: ' + error.message);
+    throw new Error('Failed to transcribe audio: ' + (error?.message || error));
   }
 }
 

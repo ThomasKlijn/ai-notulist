@@ -1,15 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { storage } from '../../../../../server/storage';
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const meeting = await storage.getMeetingWithAttendees(params.id);
+    const { id } = await params;
+    const meeting = await storage.getMeetingWithAttendees(id);
     if (!meeting) {
       return NextResponse.json({ error: 'meeting niet gevonden' }, { status: 404 });
     }
 
     // Get audio chunks count
-    const audioChunks = await storage.getAudioChunks(params.id);
+    const audioChunks = await storage.getAudioChunks(id);
 
     return NextResponse.json({
       meeting: {
