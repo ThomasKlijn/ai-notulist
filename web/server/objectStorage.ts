@@ -48,22 +48,34 @@ export class ObjectStorageService {
 
   // Uploads an audio chunk to object storage
   async uploadAudioChunk(meetingId: string, chunkIndex: number, audioBuffer: Buffer): Promise<string> {
-    const privateObjectDir = this.getPrivateObjectDir();
-    const filename = `${meetingId}/chunk-${chunkIndex}.webm`;
-    const fullPath = `${privateObjectDir}/audio/${filename}`;
+    try {
+      console.log(`Uploading audio chunk ${chunkIndex} for meeting ${meetingId}, size: ${audioBuffer.length} bytes`);
+      
+      const privateObjectDir = this.getPrivateObjectDir();
+      const filename = `${meetingId}/chunk-${chunkIndex}.webm`;
+      const fullPath = `${privateObjectDir}/audio/${filename}`;
+      
+      console.log(`Full upload path: ${fullPath}`);
 
-    const { bucketName, objectName } = parseObjectPath(fullPath);
-    const bucket = objectStorageClient.bucket(bucketName);
-    const file = bucket.file(objectName);
+      const { bucketName, objectName } = parseObjectPath(fullPath);
+      console.log(`Bucket: ${bucketName}, Object: ${objectName}`);
+      
+      const bucket = objectStorageClient.bucket(bucketName);
+      const file = bucket.file(objectName);
 
-    // Upload the audio buffer to object storage
-    await file.save(audioBuffer, {
-      metadata: {
-        contentType: 'audio/webm',
-      },
-    });
+      // Upload the audio buffer to object storage
+      await file.save(audioBuffer, {
+        metadata: {
+          contentType: 'audio/webm',
+        },
+      });
 
-    return fullPath;
+      console.log(`Successfully uploaded chunk ${chunkIndex} to ${fullPath}`);
+      return fullPath;
+    } catch (error: any) {
+      console.error(`Error uploading audio chunk ${chunkIndex}:`, error);
+      throw new Error(`Failed to upload audio chunk: ${error?.message || error}`);
+    }
   }
 
   // Downloads an audio file from object storage
