@@ -20,15 +20,6 @@ export interface MeetingSummary {
 // Transcribe audio buffer using OpenAI Whisper
 export async function transcribeAudio(audioBuffer: Buffer, language: string = 'nl'): Promise<string> {
   try {
-    // TEMPORARY: Mock transcription for testing email flow
-    console.log('🧪 USING MOCK TRANSCRIPTION FOR EMAIL TESTING');
-    await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API delay
-    return language === 'nl' 
-      ? "Dit is een test transcriptie van de meeting. We hebben verschillende onderwerpen besproken en belangrijke beslissingen genomen."
-      : "This is a test transcription of the meeting. We discussed various topics and made important decisions.";
-
-    // Real transcription code (commented for testing):
-    /*
     // Create a File-like object from the buffer
     const audioBlob = new Blob([audioBuffer], { type: 'audio/webm' });
     const audioFile = new File([audioBlob], 'recording.webm', { type: 'audio/webm' });
@@ -40,7 +31,6 @@ export async function transcribeAudio(audioBuffer: Buffer, language: string = 'n
     });
 
     return transcription.text;
-    */
   } catch (error: any) {
     console.error('Error transcribing audio:', error);
     throw new Error('Failed to transcribe audio: ' + (error?.message || error));

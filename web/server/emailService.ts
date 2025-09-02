@@ -50,7 +50,7 @@ export class EmailService {
         console.log(`📧 Sending email ${index + 1}/${attendees.length} to: ${attendee.email}`);
         return mailService.send({
           to: attendee.email,
-          from: 'ai-notulist@replit.app', // Use a verified sender domain
+          from: process.env.VERIFIED_SENDER_EMAIL || 'test@yourdomain.com', // Must be verified in SendGrid
           subject: subject,
           text: textContent,
           html: htmlContent,
