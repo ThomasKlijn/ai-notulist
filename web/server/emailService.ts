@@ -24,6 +24,12 @@ export class EmailService {
     language: string = 'nl'
   ): Promise<boolean> {
     try {
+      console.log(`📧 EmailService.sendMeetingSummary called with:`);
+      console.log(`  - Title: ${meetingTitle}`);
+      console.log(`  - Attendees: ${attendees.length} (${attendees.map(a => a.email).join(', ')})`);
+      console.log(`  - Language: ${language}`);
+      console.log(`  - Summary keys: ${Object.keys(summary)}`);
+      
       const isEnglish = language === 'en';
       
       // Create email content
@@ -31,25 +37,33 @@ export class EmailService {
         ? `Meeting Summary: ${meetingTitle}`
         : `Meeting Samenvatting: ${meetingTitle}`;
 
+      console.log(`📧 Email subject: ${subject}`);
+
       const htmlContent = this.generateEmailHTML(summary, transcription, isEnglish);
       const textContent = this.generateEmailText(summary, transcription, isEnglish);
+      
+      console.log(`📧 Email content generated, HTML length: ${htmlContent.length}, text length: ${textContent.length}`);
 
       // Send to each attendee
-      const emailPromises = attendees.map(attendee => 
-        mailService.send({
+      console.log(`📧 Preparing to send emails to ${attendees.length} attendees...`);
+      const emailPromises = attendees.map((attendee, index) => {
+        console.log(`📧 Sending email ${index + 1}/${attendees.length} to: ${attendee.email}`);
+        return mailService.send({
           to: attendee.email,
           from: 'ai-notulist@replit.app', // Use a verified sender domain
           subject: subject,
           text: textContent,
           html: htmlContent,
-        })
-      );
+        });
+      });
 
+      console.log(`📧 Executing ${emailPromises.length} email sends...`);
       await Promise.all(emailPromises);
-      console.log(`Meeting summary sent to ${attendees.length} attendees`);
+      console.log(`✅ Meeting summary sent to ${attendees.length} attendees`);
       return true;
-    } catch (error) {
-      console.error('SendGrid email error:', error);
+    } catch (error: any) {
+      console.error('❌ SendGrid email error:', error);
+      console.error('❌ Error details:', error?.response?.body || error?.message || error);
       return false;
     }
   }

@@ -32,6 +32,9 @@ export class MeetingProcessingService {
       
       // Use first chunk for transcription
       const firstChunk = audioChunks[0];
+      if (!firstChunk.objectPath) {
+        throw new Error('First audio chunk has no object path');
+      }
       const audioBuffer = await this.objectStorage.downloadAudioChunk(firstChunk.objectPath);
       
       // Transcribe audio
@@ -55,7 +58,8 @@ export class MeetingProcessingService {
 
       console.log(`Meeting ${meetingId} processing completed successfully`);
 
-      // TODO: Send email summary to attendees
+      // Send email summary to attendees
+      console.log(`Starting email delivery for meeting ${meetingId} to ${meeting.attendees.length} attendees`);
       await this.sendEmailSummary(meeting, transcription, summary);
 
     } catch (error: any) {
@@ -78,8 +82,12 @@ export class MeetingProcessingService {
     summary: MeetingSummary
   ): Promise<void> {
     try {
+      console.log(`sendEmailSummary called for meeting ${meeting.id} with ${meeting.attendees.length} attendees`);
+      console.log('Attendees:', meeting.attendees.map((a: any) => a.email));
+      
       const { emailService } = await import('./emailService');
       
+      console.log('EmailService imported, calling sendMeetingSummary...');
       const success = await emailService.sendMeetingSummary(
         meeting.title,
         meeting.attendees,
@@ -89,12 +97,13 @@ export class MeetingProcessingService {
       );
 
       if (success) {
-        console.log(`Email summary sent successfully for meeting ${meeting.id}`);
+        console.log(`✅ Email summary sent successfully for meeting ${meeting.id}`);
       } else {
-        console.error(`Failed to send email summary for meeting ${meeting.id}`);
+        console.error(`❌ Failed to send email summary for meeting ${meeting.id}`);
       }
-    } catch (error) {
-      console.error(`Error sending email summary for meeting ${meeting.id}:`, error);
+    } catch (error: any) {
+      console.error(`❌ Error sending email summary for meeting ${meeting.id}:`, error);
+      console.error('Error details:', error?.message || error);
     }
   }
 }
