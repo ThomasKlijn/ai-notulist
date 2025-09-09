@@ -21,7 +21,7 @@ export interface MeetingSummary {
 export async function transcribeAudio(audioBuffer: Buffer, language: string = 'nl'): Promise<string> {
   try {
     // Create a File-like object from the buffer
-    const audioBlob = new Blob([audioBuffer], { type: 'audio/webm' });
+    const audioBlob = new Blob([new Uint8Array(audioBuffer)], { type: 'audio/webm' });
     const audioFile = new File([audioBlob], 'recording.webm', { type: 'audio/webm' });
 
     const transcription = await openai.audio.transcriptions.create({
