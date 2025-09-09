@@ -1,3 +1,5 @@
+'use client';
+
 import DownloadAppButton from '../components/DownloadAppButton';
 
 export default function Home() {
