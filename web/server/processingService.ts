@@ -1,12 +1,12 @@
 import { storage } from './storage';
-import { ObjectStorageService } from './objectStorage';
+import { AudioStorageService } from './audioStorage';
 import { transcribeAudio, generateMeetingSummary, MeetingSummary } from './openai';
 
 export class MeetingProcessingService {
-  private objectStorage: ObjectStorageService;
+  private audioStorage: AudioStorageService;
 
   constructor() {
-    this.objectStorage = new ObjectStorageService();
+    this.audioStorage = new AudioStorageService();
   }
 
   // Process a finished meeting: transcribe audio and generate summary
@@ -35,7 +35,7 @@ export class MeetingProcessingService {
       if (!firstChunk.objectPath) {
         throw new Error('First audio chunk has no object path');
       }
-      const audioBuffer = await this.objectStorage.downloadAudioChunk(firstChunk.objectPath);
+      const audioBuffer = await this.audioStorage.downloadAudioChunk(firstChunk.objectPath);
       
       // Transcribe audio
       console.log('Transcribing first audio chunk...');

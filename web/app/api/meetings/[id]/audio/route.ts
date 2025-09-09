@@ -26,10 +26,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     // Read the audio data
     const buf = Buffer.from(await file.arrayBuffer());
     
-    // Upload to object storage
-    const { ObjectStorageService } = await import('../../../../../server/objectStorage');
-    const objectStorageService = new ObjectStorageService();
-    const objectPath = await objectStorageService.uploadAudioChunk(
+    // Store audio chunk in memory
+    const { AudioStorageService } = await import('../../../../../server/audioStorage');
+    const audioStorageService = new AudioStorageService();
+    const chunkKey = await audioStorageService.uploadAudioChunk(
       id, 
       parseInt(chunkIndex), 
       buf
@@ -43,7 +43,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       chunkIndex: parseInt(chunkIndex),
       filename,
       sizeBytes: buf.length,
-      objectPath: objectPath
+      objectPath: chunkKey
     });
 
     return NextResponse.json({ 
