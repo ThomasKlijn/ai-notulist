@@ -72,6 +72,7 @@ export class EmailService {
   private generateEmailHTML(summary: MeetingSummary, transcription: string, isEnglish: boolean): string {
     const labels = isEnglish ? {
       title: 'Meeting Summary',
+      generalSummary: 'Summary',
       keyPoints: 'Key Discussion Points',
       decisions: 'Decisions Made',
       actionItems: 'Action Items',
@@ -84,6 +85,7 @@ export class EmailService {
       dueDate: 'Due Date'
     } : {
       title: 'Meeting Samenvatting',
+      generalSummary: 'Samenvatting',
       keyPoints: 'Belangrijke Discussiepunten',
       decisions: 'Genomen Beslissingen',
       actionItems: 'Actiepunten',
@@ -119,6 +121,9 @@ export class EmailService {
         <strong>${labels.participants}:</strong> ${summary.participants.join(', ')}<br>
         <strong>${labels.duration}:</strong> ${summary.duration}
     </div>
+
+    <h2>${labels.generalSummary}</h2>
+    <p style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 15px 0; line-height: 1.6;">${summary.generalSummary}</p>
 
     <h2>${labels.keyPoints}</h2>
     <ul>
@@ -158,6 +163,7 @@ export class EmailService {
   private generateEmailText(summary: MeetingSummary, transcription: string, isEnglish: boolean): string {
     const labels = isEnglish ? {
       title: 'MEETING SUMMARY',
+      generalSummary: 'SUMMARY',
       keyPoints: 'KEY DISCUSSION POINTS',
       decisions: 'DECISIONS MADE',
       actionItems: 'ACTION ITEMS',
@@ -170,6 +176,7 @@ export class EmailService {
       dueDate: 'Due Date'
     } : {
       title: 'MEETING SAMENVATTING',
+      generalSummary: 'SAMENVATTING',
       keyPoints: 'BELANGRIJKE DISCUSSIEPUNTEN',
       decisions: 'GENOMEN BESLISSINGEN',
       actionItems: 'ACTIEPUNTEN',
@@ -187,6 +194,9 @@ ${labels.title}: ${summary.title}
 
 ${labels.participants}: ${summary.participants.join(', ')}
 ${labels.duration}: ${summary.duration}
+
+${labels.generalSummary}:
+${summary.generalSummary}
 
 ${labels.keyPoints}:
 ${summary.keyPoints.map(point => `• ${point}`).join('\n')}
