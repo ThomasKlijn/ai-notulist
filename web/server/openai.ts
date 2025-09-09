@@ -52,6 +52,7 @@ export async function generateMeetingSummary(
 
 {
   "title": "Meeting title/subject",
+  "generalSummary": "A comprehensive 2-3 sentence overview of what was discussed in the meeting",
   "keyPoints": ["List of key discussion points"],
   "decisions": ["Decisions made during the meeting"],
   "actionItems": [{"task": "Description", "assignee": "Person name if mentioned", "dueDate": "Date if mentioned"}],
@@ -66,6 +67,7 @@ Transcription: ${transcription}`
 
 {
   "title": "Meeting titel/onderwerp",
+  "generalSummary": "Een uitgebreide samenvatting van 2-3 zinnen over wat er besproken is in de meeting",
   "keyPoints": ["Lijst van belangrijke discussiepunten"],
   "decisions": ["Beslissingen genomen tijdens de meeting"],
   "actionItems": [{"task": "Beschrijving", "assignee": "Persoon naam indien genoemd", "dueDate": "Datum indien genoemd"}],
