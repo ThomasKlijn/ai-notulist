@@ -1,0 +1,125 @@
+/* PWA Mobile Optimizations for AI Notulist */
+
+/* Prevent zooming and ensure proper mobile viewport */
+@viewport {
+  width: device-width;
+  initial-scale: 1;
+  maximum-scale: 1;
+  user-scalable: no;
+}
+
+/* Touch-friendly button styles */
+button {
+  min-height: 48px;
+  min-width: 48px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: none;
+  font-size: 16px;
+  touch-action: manipulation;
+}
+
+/* Improve form input accessibility on mobile */
+input[type="text"], 
+input[type="email"], 
+select {
+  min-height: 48px;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 16px; /* Prevents zoom on iOS */
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Ensure recording controls are touch-friendly */
+.recording-controls {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+}
+
+.record-button {
+  min-height: 80px;
+  min-width: 80px;
+  border-radius: 50%;
+  font-size: 24px;
+  transition: all 0.2s ease;
+}
+
+.record-button:active {
+  transform: scale(0.95);
+}
+
+/* Mobile-first responsive design */
+@media (max-width: 768px) {
+  body {
+    padding: 16px !important;
+  }
+  
+  .container {
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+  
+  h1 {
+    font-size: 24px !important;
+  }
+  
+  .header {
+    flex-direction: column !important;
+    gap: 12px !important;
+    text-align: center !important;
+  }
+}
+
+/* Hide scrollbars but keep functionality */
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+*::-webkit-scrollbar {
+  display: none;
+}
+
+/* Safe area insets for devices with notches */
+body {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+/* PWA status bar color */
+meta[name="theme-color"] {
+  content: #000000;
+}
+
+/* Prevent text selection on UI elements */
+.no-select {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Loading states for better UX */
+.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Vibration feedback for important actions */
+.haptic-feedback {
+  animation: haptic 0.1s ease;
+}
+
+@keyframes haptic {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}

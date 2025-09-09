@@ -52,6 +52,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         }} />
       </head>
       <body style={{ fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif', margin: 0 }}>
+        <link rel="stylesheet" href="/app/globals.css" />
         <div style={{ maxWidth: 920, margin: '0 auto', padding: '24px' }}>
           <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
             <h1 style={{ margin: 0 }}>AI Notulist</h1>
