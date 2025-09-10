@@ -18,10 +18,18 @@ export interface MeetingSummary {
   nextSteps?: string[];
 }
 
-// Transcribe audio buffer using OpenAI Whisper with optimized settings
+// Import ElevenLabs Scribe for superior transcription accuracy
+import { transcribeAudioWithElevenLabs } from './elevenlabs';
+
+// Main transcription function - now using ElevenLabs Scribe (96.7% accuracy vs Whisper's ~90-95%)
 export async function transcribeAudio(audioBuffer: Buffer, language: string = 'nl'): Promise<string> {
+  return await transcribeAudioWithElevenLabs(audioBuffer, language);
+}
+
+// Legacy OpenAI Whisper function (kept as fallback)
+export async function transcribeAudioWithWhisper(audioBuffer: Buffer, language: string = 'nl'): Promise<string> {
   try {
-    console.log(`🎙️ Transcribing audio: ${audioBuffer.length} bytes, language: ${language}`);
+    console.log(`🎙️ [Whisper Fallback] Transcribing audio: ${audioBuffer.length} bytes, language: ${language}`);
     
     // Create a File-like object from the buffer
     const audioBlob = new Blob([new Uint8Array(audioBuffer)], { type: 'audio/webm' });
@@ -55,12 +63,12 @@ export async function transcribeAudio(audioBuffer: Buffer, language: string = 'n
     }
 
     const cleanText = fullText.trim();
-    console.log(`✅ Transcribed ${cleanText.length} characters: "${cleanText.substring(0, 100)}..."`);
+    console.log(`✅ [Whisper] Transcribed ${cleanText.length} characters: "${cleanText.substring(0, 100)}..."`);
     
     return cleanText;
   } catch (error: any) {
-    console.error('❌ Error transcribing audio:', error);
-    throw new Error('Failed to transcribe audio: ' + (error?.message || error));
+    console.error('❌ [Whisper] Error transcribing audio:', error);
+    throw new Error('Failed to transcribe audio with Whisper: ' + (error?.message || error));
   }
 }
 
