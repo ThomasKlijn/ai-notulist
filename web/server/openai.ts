@@ -18,22 +18,48 @@ export interface MeetingSummary {
   nextSteps?: string[];
 }
 
-// Transcribe audio buffer using OpenAI Whisper
+// Transcribe audio buffer using OpenAI Whisper with optimized settings
 export async function transcribeAudio(audioBuffer: Buffer, language: string = 'nl'): Promise<string> {
   try {
+    console.log(`🎙️ Transcribing audio: ${audioBuffer.length} bytes, language: ${language}`);
+    
     // Create a File-like object from the buffer
     const audioBlob = new Blob([new Uint8Array(audioBuffer)], { type: 'audio/webm' });
     const audioFile = new File([audioBlob], 'recording.webm', { type: 'audio/webm' });
 
+    const isEnglish = language === 'en';
+    const promptText = isEnglish 
+      ? "This is a business meeting recording. Please transcribe clearly with proper punctuation and capitalization."
+      : "Dit is een zakelijke meeting opname. Transcribeer duidelijk met juiste interpunctie en hoofdletters.";
+
     const transcription = await openai.audio.transcriptions.create({
       file: audioFile,
       model: "whisper-1",
-      language: language === 'nl' ? 'nl' : 'en', // Support Dutch and English
+      language: language === 'nl' ? 'nl' : 'en',
+      response_format: "verbose_json", // Get detailed response with segments
+      temperature: 0, // More deterministic results
+      prompt: promptText, // Context for better recognition
     });
 
-    return transcription.text;
+    // Extract text from verbose response
+    let fullText = '';
+    if (transcription.segments && Array.isArray(transcription.segments)) {
+      // Use segments for better text quality
+      fullText = transcription.segments
+        .map((segment: any) => segment.text?.trim())
+        .filter(Boolean)
+        .join(' ');
+    } else {
+      // Fallback to main text
+      fullText = transcription.text || '';
+    }
+
+    const cleanText = fullText.trim();
+    console.log(`✅ Transcribed ${cleanText.length} characters: "${cleanText.substring(0, 100)}..."`);
+    
+    return cleanText;
   } catch (error: any) {
-    console.error('Error transcribing audio:', error);
+    console.error('❌ Error transcribing audio:', error);
     throw new Error('Failed to transcribe audio: ' + (error?.message || error));
   }
 }
