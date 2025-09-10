@@ -282,6 +282,28 @@ export default function MeetingRecordPage() {
 
       {showSummary && renderSummary()}
 
+      {meetingStatus?.meeting.transcription && (
+        <div style={{ background: '#f8f9fa', padding: '20px', borderRadius: '8px', marginTop: '20px' }}>
+          <h3>Volledige Transcriptie</h3>
+          <div style={{ 
+            background: 'white', 
+            padding: '15px', 
+            borderRadius: '4px', 
+            fontFamily: 'monospace', 
+            fontSize: '14px',
+            lineHeight: '1.4',
+            maxHeight: '300px',
+            overflowY: 'auto',
+            border: '1px solid #dee2e6'
+          }}>
+            {meetingStatus.meeting.transcription}
+          </div>
+          <p style={{ fontSize: '12px', color: '#666', marginTop: '10px' }}>
+            📊 Transcriptie lengte: {meetingStatus.meeting.transcription.length} karakters
+          </p>
+        </div>
+      )}
+
       {meetingStatus?.meeting.status === 'processing' && (
         <div style={{ background: '#fff3cd', padding: '15px', borderRadius: '8px', marginTop: '20px' }}>
           <p>⏳ De meeting wordt verwerkt. Dit kan enkele minuten duren afhankelijk van de lengte van de opname.</p>
