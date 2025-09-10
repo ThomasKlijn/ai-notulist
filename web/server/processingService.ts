@@ -23,9 +23,9 @@ export class MeetingProcessingService {
       // Update status to processing
       await storage.updateMeeting(meetingId, { status: 'processing' });
 
-      // Get all audio chunks for transcription (transcribe each chunk separately)
+      // Get all audio chunks for transcription (read directly from disk)
       console.log('Getting all audio chunks for transcription...');
-      const audioChunks = await storage.getAudioChunks(meetingId);
+      const audioChunks = await this.audioStorage.getAllAudioChunksForMeeting(meetingId);
       if (audioChunks.length === 0) {
         throw new Error('No audio chunks found for transcription');
       }
@@ -35,15 +35,10 @@ export class MeetingProcessingService {
       // Transcribe each chunk separately and combine results
       const transcriptions: string[] = [];
       for (let i = 0; i < audioChunks.length; i++) {
-        const chunk = audioChunks[i];
-        if (!chunk.objectPath) {
-          console.warn(`Skipping chunk ${i}: no object path`);
-          continue;
-        }
+        const audioBuffer = audioChunks[i];
         
         try {
-          console.log(`Transcribing chunk ${i + 1}/${audioChunks.length} (${chunk.sizeBytes} bytes)...`);
-          const audioBuffer = await this.audioStorage.downloadAudioChunk(chunk.objectPath);
+          console.log(`Transcribing chunk ${i + 1}/${audioChunks.length} (${audioBuffer.length} bytes)...`);
           const chunkTranscription = await transcribeAudio(audioBuffer, meeting.language || 'nl');
           
           if (chunkTranscription.trim()) {
