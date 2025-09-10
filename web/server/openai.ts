@@ -18,53 +18,26 @@ export interface MeetingSummary {
   nextSteps?: string[];
 }
 
-// Transcribe audio buffer using ElevenLabs Scribe
+// Transcribe audio buffer using OpenAI Whisper (fallback for now)
 export async function transcribeAudio(audioBuffer: Buffer, language: string = 'nl'): Promise<string> {
   try {
-    if (!process.env.ELEVENLABS_API_KEY) {
-      throw new Error('ELEVENLABS_API_KEY environment variable is required');
-    }
-
-    // Create FormData for ElevenLabs API
-    const formData = new FormData();
+    // Temporary fallback to OpenAI Whisper while fixing ElevenLabs integration
+    console.log('Using OpenAI Whisper for transcription (ElevenLabs integration under maintenance)...');
     
-    // Create a Blob from the buffer and append to FormData
+    // Create a File-like object from the buffer
     const audioBlob = new Blob([new Uint8Array(audioBuffer)], { type: 'audio/webm' });
-    formData.append('file', audioBlob, 'recording.webm');
-    formData.append('model_id', 'scribe_v1');
-    formData.append('diarize', 'true'); // Enable speaker identification
-    formData.append('tag_audio_events', 'true'); // Tag non-speech sounds
-    
-    // Set language code if specified (ElevenLabs uses ISO codes)
-    if (language) {
-      const languageCode = language === 'nl' ? 'nl' : 'en';
-      formData.append('language_code', languageCode);
-    }
+    const audioFile = new File([audioBlob], 'recording.webm', { type: 'audio/webm' });
 
-    console.log('Sending audio to ElevenLabs Scribe for transcription...');
-    
-    const response = await fetch('https://api.elevenlabs.io/v1/speech-to-text', {
-      method: 'POST',
-      headers: {
-        'xi-api-key': process.env.ELEVENLABS_API_KEY,
-      },
-      body: formData,
+    const transcription = await openai.audio.transcriptions.create({
+      file: audioFile,
+      model: "whisper-1",
+      language: language === 'nl' ? 'nl' : 'en', // Support Dutch and English
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('ElevenLabs API error:', response.status, errorText);
-      throw new Error(`ElevenLabs API error: ${response.status} - ${errorText}`);
-    }
-
-    const result = await response.json();
-    console.log('ElevenLabs transcription completed successfully');
-    
-    // ElevenLabs returns text in the 'text' field
-    return result.text || '';
+    return transcription.text;
   } catch (error: any) {
-    console.error('Error transcribing audio with ElevenLabs:', error);
-    throw new Error('Failed to transcribe audio with ElevenLabs: ' + (error?.message || error));
+    console.error('Error transcribing audio:', error);
+    throw new Error('Failed to transcribe audio: ' + (error?.message || error));
   }
 }
 
