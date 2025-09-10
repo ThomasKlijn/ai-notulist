@@ -1,36 +1,72 @@
-// In-memory audio storage for deployment compatibility
+// Temporary file-based audio storage for deployment compatibility
 // Replaces Replit-specific object storage
+import * as fs from 'fs';
+import * as path from 'path';
+import { promisify } from 'util';
+
+const writeFile = promisify(fs.writeFile);
+const readFile = promisify(fs.readFile);
+const unlink = promisify(fs.unlink);
+const mkdir = promisify(fs.mkdir);
+const readdir = promisify(fs.readdir);
 
 interface AudioChunk {
   meetingId: string;
   chunkIndex: number;
-  buffer: Buffer;
+  filePath: string;
   timestamp: Date;
 }
 
-class InMemoryAudioStorage {
+class TemporaryFileAudioStorage {
   private chunks: Map<string, AudioChunk> = new Map();
+  private tempDir: string;
+
+  constructor() {
+    // Use /tmp directory for temporary audio storage
+    this.tempDir = path.join('/tmp', 'audio-chunks');
+    this.ensureTempDirectory();
+  }
+
+  private async ensureTempDirectory(): Promise<void> {
+    try {
+      await mkdir(this.tempDir, { recursive: true });
+    } catch (error) {
+      // Directory might already exist, that's ok
+    }
+  }
 
   // Generate key for storing chunks
   private getChunkKey(meetingId: string, chunkIndex: number): string {
     return `${meetingId}-chunk-${chunkIndex}`;
   }
 
-  // Upload an audio chunk to memory
+  // Generate file path for chunk
+  private getChunkFilePath(meetingId: string, chunkIndex: number): string {
+    return path.join(this.tempDir, `${meetingId}-chunk-${chunkIndex}.webm`);
+  }
+
+  // Upload an audio chunk to temporary file
   async uploadAudioChunk(meetingId: string, chunkIndex: number, audioBuffer: Buffer): Promise<string> {
     try {
       console.log(`Storing audio chunk ${chunkIndex} for meeting ${meetingId}, size: ${audioBuffer.length} bytes`);
       
+      await this.ensureTempDirectory();
+      
       const chunkKey = this.getChunkKey(meetingId, chunkIndex);
+      const filePath = this.getChunkFilePath(meetingId, chunkIndex);
+      
+      // Write buffer to temporary file
+      await writeFile(filePath, audioBuffer);
+      
       const chunk: AudioChunk = {
         meetingId,
         chunkIndex,
-        buffer: audioBuffer,
+        filePath,
         timestamp: new Date()
       };
 
       this.chunks.set(chunkKey, chunk);
-      console.log(`Successfully stored chunk ${chunkIndex} in memory`);
+      console.log(`Successfully stored chunk ${chunkIndex} to file: ${filePath}`);
       
       return chunkKey; // Return key as the "path"
     } catch (error: any) {
@@ -39,13 +75,23 @@ class InMemoryAudioStorage {
     }
   }
 
-  // Download an audio chunk from memory
+  // Download an audio chunk from temporary file
   async downloadAudioChunk(chunkKey: string): Promise<Buffer> {
     const chunk = this.chunks.get(chunkKey);
     if (!chunk) {
       throw new Error(`Audio chunk not found: ${chunkKey}`);
     }
-    return chunk.buffer;
+    
+    try {
+      // Check if file exists and read it
+      if (fs.existsSync(chunk.filePath)) {
+        return await readFile(chunk.filePath);
+      } else {
+        throw new Error(`Audio chunk file not found: ${chunk.filePath}`);
+      }
+    } catch (error: any) {
+      throw new Error(`Failed to read audio chunk: ${error?.message || error}`);
+    }
   }
 
   // Get all audio chunks for a meeting
@@ -62,8 +108,20 @@ class InMemoryAudioStorage {
     // Sort by chunk index
     meetingChunks.sort((a, b) => a.chunkIndex - b.chunkIndex);
 
-    // Return buffers in order
-    return meetingChunks.map(chunk => chunk.buffer);
+    // Read and return buffers in order
+    const buffers: Buffer[] = [];
+    for (const chunk of meetingChunks) {
+      try {
+        if (fs.existsSync(chunk.filePath)) {
+          const buffer = await readFile(chunk.filePath);
+          buffers.push(buffer);
+        }
+      } catch (error) {
+        console.error(`Error reading chunk file ${chunk.filePath}:`, error);
+      }
+    }
+    
+    return buffers;
   }
 
   // Combine audio chunks into a single buffer for transcription
@@ -75,40 +133,69 @@ class InMemoryAudioStorage {
   // Get first audio chunk for transcription (since WebM chunks can't be concatenated)
   async getFirstAudioChunk(meetingId: string): Promise<Buffer | null> {
     const firstChunkKey = this.getChunkKey(meetingId, 0);
-    const chunk = this.chunks.get(firstChunkKey);
-    return chunk ? chunk.buffer : null;
+    try {
+      const buffer = await this.downloadAudioChunk(firstChunkKey);
+      return buffer;
+    } catch (error) {
+      console.log(`First audio chunk not found for meeting ${meetingId}`);
+      return null;
+    }
   }
 
   // Clean up chunks for a meeting (optional - for memory management)
   async cleanupMeetingChunks(meetingId: string): Promise<void> {
     const keysToDelete: string[] = [];
+    const filesToDelete: string[] = [];
     
     for (const [key, chunk] of this.chunks.entries()) {
       if (chunk.meetingId === meetingId) {
         keysToDelete.push(key);
+        filesToDelete.push(chunk.filePath);
       }
     }
 
+    // Delete files
+    for (const filePath of filesToDelete) {
+      try {
+        if (fs.existsSync(filePath)) {
+          await unlink(filePath);
+        }
+      } catch (error) {
+        console.error(`Error deleting file ${filePath}:`, error);
+      }
+    }
+
+    // Remove from memory map
     keysToDelete.forEach(key => this.chunks.delete(key));
     console.log(`Cleaned up ${keysToDelete.length} chunks for meeting ${meetingId}`);
   }
 
   // Get storage stats
-  getStorageStats(): { totalChunks: number; totalMemoryMB: number } {
+  getStorageStats(): { totalChunks: number; totalFileSizeMB: number } {
     let totalBytes = 0;
+    let validChunks = 0;
+    
     for (const chunk of this.chunks.values()) {
-      totalBytes += chunk.buffer.length;
+      try {
+        if (fs.existsSync(chunk.filePath)) {
+          const stats = fs.statSync(chunk.filePath);
+          totalBytes += stats.size;
+          validChunks++;
+        }
+      } catch (error) {
+        // File might not exist anymore
+      }
     }
     
     return {
-      totalChunks: this.chunks.size,
-      totalMemoryMB: Math.round(totalBytes / (1024 * 1024) * 100) / 100
+      totalChunks: validChunks,
+      totalFileSizeMB: Math.round(totalBytes / (1024 * 1024) * 100) / 100
     };
   }
 }
 
 // Export singleton instance
-export const audioStorage = new InMemoryAudioStorage();
+export const audioStorage = new TemporaryFileAudioStorage();
 
 // Export class for compatibility with existing ObjectStorageService interface
 export class AudioStorageService {
