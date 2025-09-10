@@ -1,9 +1,0 @@
-run = "cd web && npm run dev"
-
-[deployment]
-run = "cd web && npm run start"
-deploymentTarget = "cloudrun"
-
-[[ports]]
-localPort = 5000
-externalPort = 80
