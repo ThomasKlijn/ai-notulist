@@ -77,19 +77,32 @@ class TemporaryFileAudioStorage {
 
   // Download an audio chunk from temporary file
   async downloadAudioChunk(chunkKey: string): Promise<Buffer> {
-    const chunk = this.chunks.get(chunkKey);
-    if (!chunk) {
-      throw new Error(`Audio chunk not found: ${chunkKey}`);
+    console.log(`Downloading audio chunk: ${chunkKey}`);
+    
+    // Parse meetingId and chunkIndex from chunkKey
+    const parts = chunkKey.split('-chunk-');
+    if (parts.length !== 2) {
+      throw new Error(`Invalid chunk key format: ${chunkKey}`);
     }
     
+    const meetingId = parts[0];
+    const chunkIndex = parseInt(parts[1]);
+    const filePath = this.getChunkFilePath(meetingId, chunkIndex);
+    
+    console.log(`Looking for file: ${filePath}`);
+    
     try {
-      // Check if file exists and read it
-      if (fs.existsSync(chunk.filePath)) {
-        return await readFile(chunk.filePath);
+      // Check if file exists and read it directly
+      if (fs.existsSync(filePath)) {
+        console.log(`✅ Found and reading chunk file: ${filePath}`);
+        const buffer = await readFile(filePath);
+        console.log(`✅ Successfully read chunk, size: ${buffer.length} bytes`);
+        return buffer;
       } else {
-        throw new Error(`Audio chunk file not found: ${chunk.filePath}`);
+        throw new Error(`Audio chunk file not found: ${filePath}`);
       }
     } catch (error: any) {
+      console.error(`❌ Failed to read audio chunk ${chunkKey}:`, error);
       throw new Error(`Failed to read audio chunk: ${error?.message || error}`);
     }
   }
@@ -133,11 +146,14 @@ class TemporaryFileAudioStorage {
   // Get first audio chunk for transcription (since WebM chunks can't be concatenated)
   async getFirstAudioChunk(meetingId: string): Promise<Buffer | null> {
     const firstChunkKey = this.getChunkKey(meetingId, 0);
+    console.log(`Looking for first audio chunk: ${firstChunkKey}`);
+    
     try {
       const buffer = await this.downloadAudioChunk(firstChunkKey);
+      console.log(`Successfully found first audio chunk, size: ${buffer.length} bytes`);
       return buffer;
     } catch (error) {
-      console.log(`First audio chunk not found for meeting ${meetingId}`);
+      console.log(`First audio chunk not found for meeting ${meetingId}:`, error);
       return null;
     }
   }
