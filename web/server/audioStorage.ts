@@ -77,7 +77,7 @@ class TemporaryFileAudioStorage {
 
   // Download an audio chunk from temporary file
   async downloadAudioChunk(chunkKey: string): Promise<Buffer> {
-    console.log(`Downloading audio chunk: ${chunkKey}`);
+    console.log(`📥 Downloading audio chunk: ${chunkKey}`);
     
     // Parse meetingId and chunkIndex from chunkKey
     const parts = chunkKey.split('-chunk-');
@@ -89,16 +89,27 @@ class TemporaryFileAudioStorage {
     const chunkIndex = parseInt(parts[1]);
     const filePath = this.getChunkFilePath(meetingId, chunkIndex);
     
-    console.log(`Looking for file: ${filePath}`);
+    console.log(`🔍 Looking for file: ${filePath}`);
     
     try {
-      // Check if file exists and read it directly
+      // Always read directly from file system (ignore in-memory Map which gets reset after restart)
       if (fs.existsSync(filePath)) {
         console.log(`✅ Found and reading chunk file: ${filePath}`);
         const buffer = await readFile(filePath);
-        console.log(`✅ Successfully read chunk, size: ${buffer.length} bytes`);
+        console.log(`✅ Successfully read chunk ${chunkIndex}, size: ${buffer.length} bytes`);
         return buffer;
       } else {
+        console.error(`❌ Audio chunk file not found at: ${filePath}`);
+        
+        // Debug: Check what files exist for this meeting
+        try {
+          const files = await readdir(this.tempDir);
+          const meetingFiles = files.filter(f => f.includes(meetingId));
+          console.log(`🔍 Available files for meeting ${meetingId}:`, meetingFiles);
+        } catch (e) {
+          console.error(`❌ Could not read temp directory ${this.tempDir}`);
+        }
+        
         throw new Error(`Audio chunk file not found: ${filePath}`);
       }
     } catch (error: any) {
@@ -109,31 +120,45 @@ class TemporaryFileAudioStorage {
 
   // Get all audio chunks for a meeting
   async getAllAudioChunksForMeeting(meetingId: string): Promise<Buffer[]> {
-    const meetingChunks: AudioChunk[] = [];
+    console.log(`Getting all audio chunks for meeting: ${meetingId}`);
     
-    // Find all chunks for this meeting
-    for (const [key, chunk] of this.chunks.entries()) {
-      if (chunk.meetingId === meetingId) {
-        meetingChunks.push(chunk);
-      }
-    }
-
-    // Sort by chunk index
-    meetingChunks.sort((a, b) => a.chunkIndex - b.chunkIndex);
-
-    // Read and return buffers in order
+    // Read directly from file system instead of relying on in-memory Map
+    // (which gets reset after server restart)
     const buffers: Buffer[] = [];
-    for (const chunk of meetingChunks) {
-      try {
-        if (fs.existsSync(chunk.filePath)) {
-          const buffer = await readFile(chunk.filePath);
-          buffers.push(buffer);
+    
+    try {
+      const files = await readdir(this.tempDir);
+      const chunkFiles = files
+        .filter(file => file.startsWith(`${meetingId}-chunk-`) && file.endsWith('.webm'))
+        .map(file => {
+          const match = file.match(new RegExp(`^${meetingId}-chunk-(\\d+)\\.webm$`));
+          return match ? { 
+            file, 
+            chunkIndex: parseInt(match[1]),
+            filePath: path.join(this.tempDir, file)
+          } : null;
+        })
+        .filter(Boolean)
+        .sort((a, b) => a!.chunkIndex - b!.chunkIndex);
+
+      console.log(`Found ${chunkFiles.length} chunk files for meeting ${meetingId}`);
+      
+      for (const chunkFile of chunkFiles) {
+        if (chunkFile && fs.existsSync(chunkFile.filePath)) {
+          try {
+            const buffer = await readFile(chunkFile.filePath);
+            buffers.push(buffer);
+            console.log(`✅ Read chunk ${chunkFile.chunkIndex}: ${buffer.length} bytes`);
+          } catch (error) {
+            console.error(`Error reading chunk file ${chunkFile.filePath}:`, error);
+          }
         }
-      } catch (error) {
-        console.error(`Error reading chunk file ${chunk.filePath}:`, error);
       }
+    } catch (error) {
+      console.error(`Error reading temp directory ${this.tempDir}:`, error);
     }
     
+    console.log(`Total chunks loaded: ${buffers.length}`);
     return buffers;
   }
 
