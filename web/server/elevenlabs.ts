@@ -45,7 +45,7 @@ export async function transcribeAudioWithElevenLabs(
     const audioFile = new File([audioBlob], 'recording.webm', { type: 'audio/webm' });
     
     formData.append('file', audioFile);
-    formData.append('model_id', 'scribe_v1');
+    formData.append('model_id', 'scribe_v1'); // Back to standard model
     formData.append('language_code', languageCode);
     formData.append('diarize', 'true'); // Enable speaker identification
     formData.append('tag_audio_events', 'true'); // Detect laughter, applause, etc. (correct parameter name)
@@ -53,7 +53,10 @@ export async function transcribeAudioWithElevenLabs(
     
     console.log(`🚀 [ElevenLabs] Sending request to Scribe API...`);
     console.log(`🔑 [ElevenLabs] API Key exists: ${!!process.env.ELEVENLABS_API_KEY}`);
+    console.log(`🔑 [ElevenLabs] API Key starts with: ${process.env.ELEVENLABS_API_KEY?.substring(0, 8)}...`);
     console.log(`📊 [ElevenLabs] File size: ${audioBuffer.length} bytes`);
+    console.log(`📊 [ElevenLabs] Language: ${languageCode}`);
+    console.log(`📊 [ElevenLabs] Model: scribe_v1`);
     
     const response = await fetch('https://api.elevenlabs.io/v1/speech-to-text/convert', {
       method: 'POST',
@@ -133,7 +136,7 @@ export async function transcribeWithSpeakerAnalysis(
     const audioFile = new File([audioBlob], 'recording.webm', { type: 'audio/webm' });
     
     formData.append('file', audioFile);
-    formData.append('model_id', 'scribe_v1');
+    formData.append('model_id', 'scribe_v1'); // Back to standard model
     formData.append('language_code', languageCode);
     formData.append('diarize', 'true');
     formData.append('tag_audio_events', 'true');
