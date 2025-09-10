@@ -23,36 +23,18 @@ export class MeetingProcessingService {
       // Update status to processing
       await storage.updateMeeting(meetingId, { status: 'processing' });
 
-      // Get all audio chunks for transcription (read directly from disk)
-      console.log('Getting all audio chunks for transcription...');
-      const audioChunks = await this.audioStorage.getAllAudioChunksForMeeting(meetingId);
-      if (audioChunks.length === 0) {
-        throw new Error('No audio chunks found for transcription');
+      // NEW APPROACH: Combine all chunks into single audio file for transcription
+      console.log('🎯 NEW: Combining all audio chunks into single file...');
+      const combinedAudioBuffer = await this.audioStorage.combineAudioChunks(meetingId);
+      if (combinedAudioBuffer.length === 0) {
+        throw new Error('No audio data found for transcription');
       }
       
-      console.log(`Found ${audioChunks.length} audio chunks to transcribe`);
+      console.log(`✅ Combined audio size: ${combinedAudioBuffer.length} bytes (${Math.round(combinedAudioBuffer.length / 1024 / 1024 * 10) / 10} MB)`);
       
-      // Transcribe each chunk separately and combine results
-      const transcriptions: string[] = [];
-      for (let i = 0; i < audioChunks.length; i++) {
-        const audioBuffer = audioChunks[i];
-        
-        try {
-          console.log(`Transcribing chunk ${i + 1}/${audioChunks.length} (${audioBuffer.length} bytes)...`);
-          const chunkTranscription = await transcribeAudio(audioBuffer, meeting.language || 'nl');
-          
-          if (chunkTranscription.trim()) {
-            transcriptions.push(chunkTranscription.trim());
-            console.log(`✅ Chunk ${i + 1} transcribed: ${chunkTranscription.substring(0, 50)}...`);
-          }
-        } catch (error) {
-          console.error(`❌ Error transcribing chunk ${i + 1}:`, error);
-          // Continue with other chunks
-        }
-      }
-      
-      // Combine all transcriptions into one text
-      const transcription = transcriptions.join(' ').trim();
+      // Transcribe the complete audio file once
+      console.log('🎙️ Transcribing complete audio file...');
+      const transcription = await transcribeAudio(combinedAudioBuffer, meeting.language || 'nl');
       console.log(`✅ Complete transcription (${transcription.length} chars): ${transcription.substring(0, 100)}...`);
       
       // Generate summary
