@@ -58,7 +58,7 @@ export async function transcribeAudioWithElevenLabs(
     console.log(`📊 [ElevenLabs] Language: ${languageCode}`);
     console.log(`📊 [ElevenLabs] Model: scribe_v1`);
     
-    const response = await fetch('https://api.elevenlabs.io/v1/speech-to-text/convert', {
+    const response = await fetch('https://api.elevenlabs.io/v1/speech-to-text', {
       method: 'POST',
       headers: {
         'xi-api-key': process.env.ELEVENLABS_API_KEY,
@@ -142,7 +142,7 @@ export async function transcribeWithSpeakerAnalysis(
     formData.append('tag_audio_events', 'true');
     formData.append('timestamps_granularity', 'word');
     
-    const response = await fetch('https://api.elevenlabs.io/v1/speech-to-text/convert', {
+    const response = await fetch('https://api.elevenlabs.io/v1/speech-to-text', {
       method: 'POST',
       headers: {
         'xi-api-key': process.env.ELEVENLABS_API_KEY,
