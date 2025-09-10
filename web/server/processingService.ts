@@ -23,23 +23,42 @@ export class MeetingProcessingService {
       // Update status to processing
       await storage.updateMeeting(meetingId, { status: 'processing' });
 
-      // Get first audio chunk for transcription (WebM chunks can't be simply concatenated)
-      console.log('Getting first audio chunk for transcription...');
+      // Get all audio chunks for transcription (transcribe each chunk separately)
+      console.log('Getting all audio chunks for transcription...');
       const audioChunks = await storage.getAudioChunks(meetingId);
       if (audioChunks.length === 0) {
         throw new Error('No audio chunks found for transcription');
       }
       
-      // Use first chunk for transcription
-      const firstChunk = audioChunks[0];
-      if (!firstChunk.objectPath) {
-        throw new Error('First audio chunk has no object path');
-      }
-      const audioBuffer = await this.audioStorage.downloadAudioChunk(firstChunk.objectPath);
+      console.log(`Found ${audioChunks.length} audio chunks to transcribe`);
       
-      // Transcribe audio
-      console.log('Transcribing first audio chunk...');
-      const transcription = await transcribeAudio(audioBuffer, meeting.language || 'nl');
+      // Transcribe each chunk separately and combine results
+      const transcriptions: string[] = [];
+      for (let i = 0; i < audioChunks.length; i++) {
+        const chunk = audioChunks[i];
+        if (!chunk.objectPath) {
+          console.warn(`Skipping chunk ${i}: no object path`);
+          continue;
+        }
+        
+        try {
+          console.log(`Transcribing chunk ${i + 1}/${audioChunks.length} (${chunk.sizeBytes} bytes)...`);
+          const audioBuffer = await this.audioStorage.downloadAudioChunk(chunk.objectPath);
+          const chunkTranscription = await transcribeAudio(audioBuffer, meeting.language || 'nl');
+          
+          if (chunkTranscription.trim()) {
+            transcriptions.push(chunkTranscription.trim());
+            console.log(`✅ Chunk ${i + 1} transcribed: ${chunkTranscription.substring(0, 50)}...`);
+          }
+        } catch (error) {
+          console.error(`❌ Error transcribing chunk ${i + 1}:`, error);
+          // Continue with other chunks
+        }
+      }
+      
+      // Combine all transcriptions into one text
+      const transcription = transcriptions.join(' ').trim();
+      console.log(`✅ Complete transcription (${transcription.length} chars): ${transcription.substring(0, 100)}...`);
       
       // Generate summary
       console.log('Generating AI summary...');
