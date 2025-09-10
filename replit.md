@@ -73,15 +73,11 @@ type Attendee = {
 - **getUserMedia API**: Microphone access for audio capture
 - **FormData API**: File upload handling for audio chunks
 
-## AI Processing Services
-Current integrations:
-- **Speech-to-Text**: ElevenLabs Scribe v1 for high-accuracy audio transcription (99 languages, speaker diarization)
-- **AI Summaries**: OpenAI GPT-5 for meeting analysis and structured summaries
-- **Email Delivery**: SendGrid for automated meeting summary distribution
-
 ## Future Integration Points
 The architecture is prepared for:
+- **Speech-to-Text Services**: OpenAI Whisper or similar for audio transcription
 - **Cloud Storage**: S3 or similar for persistent audio chunk storage
+- **Email Services**: SMTP integration for automated meeting summaries
 - **Database**: Migration from in-memory storage to persistent database (Drizzle ORM ready)
 - **Queue System**: Background job processing for audio analysis and summary generation
 

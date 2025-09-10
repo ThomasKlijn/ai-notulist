@@ -18,12 +18,9 @@ export interface MeetingSummary {
   nextSteps?: string[];
 }
 
-// Transcribe audio buffer using OpenAI Whisper (fallback for now)
+// Transcribe audio buffer using OpenAI Whisper
 export async function transcribeAudio(audioBuffer: Buffer, language: string = 'nl'): Promise<string> {
   try {
-    // Temporary fallback to OpenAI Whisper while fixing ElevenLabs integration
-    console.log('Using OpenAI Whisper for transcription (ElevenLabs integration under maintenance)...');
-    
     // Create a File-like object from the buffer
     const audioBlob = new Blob([new Uint8Array(audioBuffer)], { type: 'audio/webm' });
     const audioFile = new File([audioBlob], 'recording.webm', { type: 'audio/webm' });
