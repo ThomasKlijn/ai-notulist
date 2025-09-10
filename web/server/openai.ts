@@ -1,6 +1,6 @@
 import OpenAI from "openai";
 
-// the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
+// Using GPT-4o which is the most capable model currently available
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export interface MeetingSummary {
@@ -80,7 +80,7 @@ Meeting Titel: ${meetingTitle}
 Transcriptie: ${transcription}`;
 
     const response = await openai.chat.completions.create({
-      model: "gpt-5",
+      model: "gpt-4o",
       messages: [
         {
           role: "system",
