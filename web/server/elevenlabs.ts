@@ -48,11 +48,12 @@ export async function transcribeAudioWithElevenLabs(
     formData.append('model_id', 'scribe_v1');
     formData.append('language_code', languageCode);
     formData.append('diarize', 'true'); // Enable speaker identification
-    formData.append('audio_events', 'true'); // Detect laughter, applause, etc.
-    formData.append('temperature', '0.0'); // Most deterministic results
-    formData.append('num_speakers', '8'); // Support up to 8 speakers for meetings
+    formData.append('tag_audio_events', 'true'); // Detect laughter, applause, etc. (correct parameter name)
+    formData.append('timestamps_granularity', 'word'); // Word-level timestamps
     
     console.log(`🚀 [ElevenLabs] Sending request to Scribe API...`);
+    console.log(`🔑 [ElevenLabs] API Key exists: ${!!process.env.ELEVENLABS_API_KEY}`);
+    console.log(`📊 [ElevenLabs] File size: ${audioBuffer.length} bytes`);
     
     const response = await fetch('https://api.elevenlabs.io/v1/speech-to-text/convert', {
       method: 'POST',
@@ -135,9 +136,8 @@ export async function transcribeWithSpeakerAnalysis(
     formData.append('model_id', 'scribe_v1');
     formData.append('language_code', languageCode);
     formData.append('diarize', 'true');
-    formData.append('audio_events', 'true');
-    formData.append('temperature', '0.0');
-    formData.append('num_speakers', '8');
+    formData.append('tag_audio_events', 'true');
+    formData.append('timestamps_granularity', 'word');
     
     const response = await fetch('https://api.elevenlabs.io/v1/speech-to-text/convert', {
       method: 'POST',

@@ -21,9 +21,16 @@ export interface MeetingSummary {
 // Import ElevenLabs Scribe for superior transcription accuracy
 import { transcribeAudioWithElevenLabs } from './elevenlabs';
 
-// Main transcription function - now using ElevenLabs Scribe (96.7% accuracy vs Whisper's ~90-95%)
+// Main transcription function - try ElevenLabs first, fallback to Whisper
 export async function transcribeAudio(audioBuffer: Buffer, language: string = 'nl'): Promise<string> {
-  return await transcribeAudioWithElevenLabs(audioBuffer, language);
+  try {
+    console.log('🎯 Attempting ElevenLabs Scribe transcription first...');
+    return await transcribeAudioWithElevenLabs(audioBuffer, language);
+  } catch (elevenlabsError: any) {
+    console.warn('⚠️ ElevenLabs failed, falling back to OpenAI Whisper:', elevenlabsError.message);
+    console.log('🔄 Using OpenAI Whisper as fallback...');
+    return await transcribeAudioWithWhisper(audioBuffer, language);
+  }
 }
 
 // Legacy OpenAI Whisper function (kept as fallback)
