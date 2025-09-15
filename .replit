@@ -14,3 +14,14 @@ channel = "stable-25_05"
 
 [agent]
 integrations = ["javascript_openai==1.0.0", "javascript_database==1.0.0", "javascript_sendgrid==1.0.0", "javascript_object_storage==1.0.0"]
+
+[workflows]
+
+[[workflows.workflow]]
+name = "Start AI Notulist"
+mode = "sequential"
+author = 41925265
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd web && npm run dev"
