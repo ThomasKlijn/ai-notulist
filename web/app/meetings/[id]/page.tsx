@@ -26,6 +26,7 @@ export default function MeetingRecordPage() {
   const [chunksSent, setChunksSent] = useState(0);
   const [meetingStatus, setMeetingStatus] = useState<MeetingStatus | null>(null);
   const [showSummary, setShowSummary] = useState(false);
+  const [hasShownSummary, setHasShownSummary] = useState(false);
   const chunkIndexRef = useRef(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const statusCheckRef = useRef<NodeJS.Timeout | null>(null);
@@ -64,6 +65,12 @@ export default function MeetingRecordPage() {
       if (res.ok) {
         const data: MeetingStatus = await res.json();
         setMeetingStatus(data);
+        
+        // Auto-show summary when it becomes available (only once)
+        if (data.meeting.summary && !hasShownSummary) {
+          setShowSummary(true);
+          setHasShownSummary(true);
+        }
         
         // Stop checking if completed or failed
         if (data.meeting.status === 'completed' || data.meeting.status === 'failed') {
@@ -119,8 +126,8 @@ export default function MeetingRecordPage() {
     try { 
       await fetch(`/api/meetings/${id}/finish`, { method: 'POST' }); 
       
-      // Start checking status every 5 seconds
-      statusCheckRef.current = setInterval(checkMeetingStatus, 5000);
+      // Start checking status every 2 seconds for faster updates
+      statusCheckRef.current = setInterval(checkMeetingStatus, 2000);
       checkMeetingStatus(); // Check immediately
     } catch (error) {
       console.error('Error finishing meeting:', error);
@@ -155,7 +162,19 @@ export default function MeetingRecordPage() {
     const summary = meetingStatus.meeting.summary;
     return (
       <div style={{ background: '#f8f9fa', padding: '20px', borderRadius: '8px', marginTop: '20px' }}>
-        <h3>Meeting Samenvatting</h3>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '20px' }}>
+          <span style={{ fontSize: '28px', marginRight: '12px' }}>📋</span>
+          <h3 style={{ margin: '0', color: '#495057' }}>Nederlandse Meeting Samenvatting</h3>
+        </div>
+        
+        {summary.generalSummary && (
+          <div style={{ marginBottom: '20px', background: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+            <h4 style={{ color: '#495057', marginBottom: '12px', display: 'flex', alignItems: 'center' }}>
+              <span style={{ marginRight: '8px' }}>💬</span>Algemene Samenvatting
+            </h4>
+            <p style={{ lineHeight: '1.6', margin: '0', color: '#6c757d' }}>{summary.generalSummary}</p>
+          </div>
+        )}
         
         {summary.keyPoints && (
           <div style={{ marginBottom: '15px' }}>
@@ -271,7 +290,7 @@ export default function MeetingRecordPage() {
               cursor: 'pointer'
             }}
           >
-            {showSummary ? 'Verberg samenvatting' : 'Toon samenvatting'}
+            {showSummary ? '📖 Verberg samenvatting' : '📋 Toon Nederlandse samenvatting'}
           </button>
         )}
       </div>
@@ -305,15 +324,47 @@ export default function MeetingRecordPage() {
       )}
 
       {meetingStatus?.meeting.status === 'processing' && (
-        <div style={{ background: '#fff3cd', padding: '15px', borderRadius: '8px', marginTop: '20px' }}>
-          <p>⏳ De meeting wordt verwerkt. Dit kan enkele minuten duren afhankelijk van de lengte van de opname.</p>
-          <p>De samenvatting wordt automatisch naar alle deelnemers gemaild zodra klaar.</p>
+        <div style={{ background: '#fff3cd', padding: '20px', borderRadius: '8px', marginTop: '20px', border: '1px solid #ffc107' }}>
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
+            <div style={{ 
+              width: '20px', 
+              height: '20px', 
+              border: '2px solid #ffc107', 
+              borderTop: '2px solid transparent', 
+              borderRadius: '50%', 
+              animation: 'spin 1s linear infinite',
+              marginRight: '10px'
+            }}></div>
+            <strong>🎙️ Audio wordt verwerkt...</strong>
+          </div>
+          <p style={{ margin: '0 0 10px 0' }}>
+            <strong>Stap 1:</strong> Audio transcriptie via ElevenLabs Scribe<br/>
+            <strong>Stap 2:</strong> AI samenvatting en actiepunten genereren<br/>
+            <strong>Stap 3:</strong> Email versturen naar deelnemers
+          </p>
+          <p style={{ fontSize: '14px', color: '#856404', margin: '10px 0 0 0' }}>
+            Dit kan 1-3 minuten duren afhankelijk van de lengte van de opname. De samenvatting verschijnt hier zodra deze klaar is.
+          </p>
+          <style>{`
+            @keyframes spin {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
+            }
+          `}</style>
         </div>
       )}
 
       {meetingStatus?.meeting.status === 'completed' && (
-        <div style={{ background: '#d4edda', padding: '15px', borderRadius: '8px', marginTop: '20px' }}>
-          <p>✅ Meeting succesvol verwerkt! De samenvatting is verzonden naar alle deelnemers.</p>
+        <div style={{ background: '#d4edda', padding: '20px', borderRadius: '8px', marginTop: '20px', border: '1px solid #28a745' }}>
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
+            <span style={{ fontSize: '24px', marginRight: '10px' }}>✅</span>
+            <strong style={{ color: '#155724' }}>Meeting succesvol verwerkt!</strong>
+          </div>
+          <p style={{ margin: '0', color: '#155724' }}>
+            📊 <strong>Transcriptie:</strong> {meetingStatus.meeting.transcription?.length || 0} karakters<br/>
+            🤖 <strong>AI Samenvatting:</strong> Inclusief actiepunten en beslissingen<br/>
+            📧 <strong>Email:</strong> Verzonden naar {meetingStatus.meeting.attendees.length} deelnemer(s)
+          </p>
         </div>
       )}
 
