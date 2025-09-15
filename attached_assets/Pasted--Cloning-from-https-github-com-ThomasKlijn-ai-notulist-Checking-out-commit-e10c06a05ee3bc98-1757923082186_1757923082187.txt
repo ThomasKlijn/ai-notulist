@@ -1,0 +1,48 @@
+==> Cloning from https://github.com/ThomasKlijn/ai-notulist
+==> Checking out commit e10c06a05ee3bc98622a9c66ffdf4e033fa89927 in branch main
+==> Using Python version 3.13.4 (default)
+==> Docs on specifying a Python version: https://render.com/docs/python-version
+==> Using Poetry version 2.1.3 (default)
+==> Docs on specifying a Poetry version: https://render.com/docs/poetry-version
+==> Running build command 'cd web && npm install && npm run build'...
+==> Using Node.js version 22.16.0 (default)
+==> Docs on specifying a Node.js version: https://render.com/docs/node-version
+added 95 packages, and audited 96 packages in 13s
+16 packages are looking for funding
+  run `npm fund` for details
+1 high severity vulnerability
+To address all issues, run:
+  npm audit fix
+Run `npm audit` for details.
+> web@0.1.0 build
+> next build --turbopack
+ ⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of /opt/render/project/src/package-lock.json as the root directory.
+ To silence this warning, set `turbopack.root` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory for more information.
+ Detected additional lockfiles: 
+   * /opt/render/project/src/web/package-lock.json
+⚠ No build cache found. Please configure build caching for faster rebuilds. Read more: https://nextjs.org/docs/messages/no-cache
+   ▲ Next.js 15.5.2 (Turbopack)
+   Creating an optimized production build ...
+ ✓ Finished writing to disk in 12ms
+ ✓ Compiled successfully in 9.4s
+   Linting and checking validity of types ...
+ ⨯ ESLint must be installed in order to run during builds: npm install --save-dev eslint
+Failed to compile.
+./server/elevenlabs.ts:44:33
+Type error: Type 'Buffer<ArrayBufferLike>' is not assignable to type 'BlobPart'.
+  Type 'Buffer<ArrayBufferLike>' is not assignable to type 'ArrayBufferView<ArrayBuffer>'.
+    Types of property 'buffer' are incompatible.
+      Type 'ArrayBufferLike' is not assignable to type 'ArrayBuffer'.
+        Type 'SharedArrayBuffer' is missing the following properties from type 'ArrayBuffer': resizable, resize, detached, transfer, transferToFixedLength
+  42 |     
+  43 |     // Create a blob from the audio buffer
+> 44 |     const audioBlob = new Blob([audioBuffer], { type: 'audio/webm' });
+     |                                 ^
+  45 |     const audioFile = new File([audioBlob], 'recording.webm', { type: 'audio/webm' });
+  46 |     
+  47 |     formData.append('file', audioFile);
+Next.js build worker exited with code: 1 and signal: null
+==> Build failed 😞
+==> Common ways to troubleshoot your deploy: https://render.com/docs/troubleshooting-deploys

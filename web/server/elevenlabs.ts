@@ -40,8 +40,8 @@ export async function transcribeAudioWithElevenLabs(
     // Create FormData for the API request
     const formData = new FormData();
     
-    // Create a blob from the audio buffer
-    const audioBlob = new Blob([audioBuffer], { type: 'audio/webm' });
+    // Create a blob from the audio buffer (convert Buffer to Uint8Array for Node.js compatibility)
+    const audioBlob = new Blob([new Uint8Array(audioBuffer)], { type: 'audio/webm' });
     const audioFile = new File([audioBlob], 'recording.webm', { type: 'audio/webm' });
     
     formData.append('file', audioFile);
@@ -131,7 +131,7 @@ export async function transcribeWithSpeakerAnalysis(
     const languageCode = language === 'nl' ? 'nl' : 'en';
     
     const formData = new FormData();
-    const audioBlob = new Blob([audioBuffer], { type: 'audio/webm' });
+    const audioBlob = new Blob([new Uint8Array(audioBuffer)], { type: 'audio/webm' });
     const audioFile = new File([audioBlob], 'recording.webm', { type: 'audio/webm' });
     
     formData.append('file', audioFile);
