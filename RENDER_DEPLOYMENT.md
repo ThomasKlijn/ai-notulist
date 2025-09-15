@@ -5,7 +5,8 @@
 1. **GitHub Repository** - Push your code to GitHub
 2. **Render Account** - Sign up at [render.com](https://render.com)
 3. **Required API Keys:**
-   - OpenAI API Key
+   - ElevenLabs API Key (primary transcription - higher accuracy)
+   - OpenAI API Key (fallback transcription + AI summaries)
    - SendGrid API Key + Verified Sender Email
    - Neon PostgreSQL Database URL
 
@@ -26,7 +27,7 @@
 
 3. **Environment Settings:**
    - **Root Directory:** Leave empty (will auto-detect)
-   - **Runtime:** Node.js
+   - **Runtime:** Node.js 20.x (required for ElevenLabs compatibility)
    - **Plan:** Free tier or Starter ($7/month recommended)
 
 ### 2. Environment Variables
@@ -35,11 +36,13 @@ Add these in Render Dashboard → Environment:
 
 ```
 DATABASE_URL=postgresql://username:password@host:port/database
+ELEVENLABS_API_KEY=your_elevenlabs_api_key_here
 OPENAI_API_KEY=your_openai_api_key_here
 SENDGRID_API_KEY=your_sendgrid_api_key_here
 VERIFIED_SENDER_EMAIL=your_verified_email@domain.com
-PORT=5000
 ```
+
+**⚠️ Important:** Do NOT set PORT on Render - the platform manages this automatically.
 
 ### 3. Database Setup (Neon)
 
@@ -71,7 +74,7 @@ PORT=5000
 
 ### 1. Test Core Features
 - ✅ Meeting creation and recording
-- ✅ Audio transcription via OpenAI
+- ✅ Audio transcription via ElevenLabs (primary) with OpenAI fallback
 - ✅ AI summary generation
 - ✅ Email delivery via SendGrid
 - ✅ Mobile app installation
@@ -91,7 +94,7 @@ Compatible: iOS Safari, Android Chrome, Desktop browsers
 ## 🔍 Troubleshooting
 
 ### Build Failures
-- Check Node.js version (requires 18+)
+- Check Node.js version (requires 20+)
 - Verify build commands are correct
 - Check environment variables are set
 
@@ -129,7 +132,7 @@ Compatible: iOS Safari, Android Chrome, Desktop browsers
 Your AI Notulist is now live with:
 - 🌐 **Web App:** Full-featured meeting notes
 - 📱 **Mobile App:** Installable PWA experience  
-- 🤖 **AI Processing:** OpenAI transcription and summaries
+- 🤖 **AI Processing:** ElevenLabs transcription (primary) with OpenAI fallback and summaries
 - 📧 **Email Integration:** Automatic delivery to attendees
 
 Share your app URL and let users install the mobile app directly!

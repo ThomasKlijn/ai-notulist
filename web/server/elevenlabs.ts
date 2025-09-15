@@ -52,8 +52,7 @@ export async function transcribeAudioWithElevenLabs(
     formData.append('timestamps_granularity', 'word'); // Word-level timestamps
     
     console.log(`🚀 [ElevenLabs] Sending request to Scribe API...`);
-    console.log(`🔑 [ElevenLabs] API Key exists: ${!!process.env.ELEVENLABS_API_KEY}`);
-    console.log(`🔑 [ElevenLabs] API Key starts with: ${process.env.ELEVENLABS_API_KEY?.substring(0, 8)}...`);
+    console.log(`🔑 [ElevenLabs] API Key configured: ${!!process.env.ELEVENLABS_API_KEY}`);
     console.log(`📊 [ElevenLabs] File size: ${audioBuffer.length} bytes`);
     console.log(`📊 [ElevenLabs] Language: ${languageCode}`);
     console.log(`📊 [ElevenLabs] Model: scribe_v1`);
