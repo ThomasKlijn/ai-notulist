@@ -1,6 +1,6 @@
 import { storage } from './storage';
-import { AudioStorageService } from './audioStorage';
-import { transcribeAudio, generateMeetingSummary, MeetingSummary } from './openai';
+import { transcribeAudio, generateMeetingSummary } from './openai';
+import type { MeetingSummary } from './openai';
 import * as fs from 'fs';
 import * as path from 'path';
 import { promisify } from 'util';
@@ -10,16 +10,21 @@ const readFile = promisify(fs.readFile);
 const unlink = promisify(fs.unlink);
 
 export class MeetingProcessingService {
-  private audioStorage: AudioStorageService;
   private processingQueue: Map<string, Promise<void>> = new Map();
-  private maxConcurrentProcessing = 1; // Only 1 meeting at a time to prevent memory spikes
-  private currentProcessingCount = 0;
+  private processingChain: Promise<void> = Promise.resolve(); // Serialize all processing
+  private cleanupInterval?: NodeJS.Timeout;
 
   constructor() {
-    this.audioStorage = new AudioStorageService();
+    // No longer using AudioStorageService - we work directly with temp files
+    // Schedule periodic cleanup every 6 hours
+    this.cleanupInterval = setInterval(() => {
+      this.cleanupOrphanedChunks(24).catch(err => 
+        console.error('Periodic cleanup failed:', err)
+      );
+    }, 6 * 60 * 60 * 1000); // 6 hours
   }
 
-  // Process a finished meeting: transcribe audio and generate summary (with queue control)
+  // Process a finished meeting: transcribe audio and generate summary (strict serialization)
   async processMeeting(meetingId: string): Promise<void> {
     // Check if already processing this meeting
     if (this.processingQueue.has(meetingId)) {
@@ -27,37 +32,21 @@ export class MeetingProcessingService {
       return this.processingQueue.get(meetingId)!;
     }
     
-    // Strict concurrency control - wait until we have capacity
-    while (this.currentProcessingCount >= this.maxConcurrentProcessing) {
-      console.log(`⏳ Processing queue full (${this.currentProcessingCount}/${this.maxConcurrentProcessing}), waiting for meeting ${meetingId}`);
-      
-      // Wait for one of the current processes to finish
-      const existingPromises = Array.from(this.processingQueue.values());
-      if (existingPromises.length > 0) {
-        try {
-          await Promise.race(existingPromises);
-        } catch (e) {
-          // Ignore individual errors, just wait for capacity
-        }
-      } else {
-        // Safety break if no promises but count is still high (shouldn't happen)
-        await new Promise(resolve => setTimeout(resolve, 100));
-      }
-    }
-    
-    // Create processing promise and add to queue
-    const processingPromise = this.doProcessMeeting(meetingId);
-    this.processingQueue.set(meetingId, processingPromise);
-    this.currentProcessingCount++;
-    
-    try {
-      await processingPromise;
-    } finally {
+    // STRICT SERIALIZATION: Chain all processing to guarantee max 1 at a time
+    const processingPromise = this.processingChain.then(async () => {
+      console.log(`🚀 Starting serialized processing for meeting ${meetingId}`);
+      return this.doProcessMeeting(meetingId);
+    }).finally(() => {
       // Clean up from queue when done
       this.processingQueue.delete(meetingId);
-      this.currentProcessingCount--;
-      console.log(`🔄 Processing completed for ${meetingId}. Queue size: ${this.processingQueue.size}`);
-    }
+      console.log(`✅ Serialized processing completed for ${meetingId}`);
+    });
+    
+    // Add to queue and update chain
+    this.processingQueue.set(meetingId, processingPromise);
+    this.processingChain = processingPromise.catch(() => {}); // Continue chain even on errors
+    
+    return processingPromise;
   }
   
   // Internal processing method

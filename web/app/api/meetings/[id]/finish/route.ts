@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { storage } from '../../../../../server/storage';
 
+// Use Node.js runtime for file system operations in processingService
+export const runtime = 'nodejs';
+
 export async function POST(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
