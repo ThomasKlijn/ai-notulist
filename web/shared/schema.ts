@@ -101,6 +101,7 @@ export const insertAudioChunkSchema = createInsertSchema(audioChunks).omit({
 
 export const insertSpeakerSchema = createInsertSchema(speakers).omit({
   id: true,
+  meetingId: true,
   createdAt: true,
 });
 

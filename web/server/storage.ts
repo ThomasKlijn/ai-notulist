@@ -1,6 +1,6 @@
 import { db } from "./db";
-import { meetings, attendees, audioChunks, type Meeting, type Attendee, type AudioChunk, type InsertMeeting, type InsertAttendee, type InsertAudioChunk, type MeetingWithAttendees } from "../shared/schema";
-import { eq, and } from "drizzle-orm";
+import { meetings, attendees, audioChunks, speakers, type Meeting, type Attendee, type AudioChunk, type Speaker, type InsertMeeting, type InsertAttendee, type InsertAudioChunk, type InsertSpeaker, type MeetingWithAttendees } from "../shared/schema";
+import { eq, and, lt } from "drizzle-orm";
 
 export interface IStorage {
   // Meeting operations
@@ -14,6 +14,16 @@ export interface IStorage {
   addAudioChunk(chunk: InsertAudioChunk): Promise<AudioChunk>;
   getAudioChunks(meetingId: string): Promise<AudioChunk[]>;
   incrementChunkCount(meetingId: string): Promise<void>;
+  
+  // Speaker operations
+  addSpeakers(meetingId: string, speakersList: InsertSpeaker[]): Promise<Speaker[]>;
+  getSpeakers(meetingId: string): Promise<Speaker[]>;
+  updateSpeakerName(meetingId: string, speakerId: string, name: string): Promise<void>;
+  
+  // Auto-cleanup operations
+  getMeetingsForCleanup(retentionDays?: number): Promise<Meeting[]>;
+  cleanupMeeting(meetingId: string): Promise<void>;
+  updateLastCleanup(meetingId: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -60,9 +70,16 @@ export class DatabaseStorage implements IStorage {
       .from(attendees)
       .where(eq(attendees.meetingId, id));
 
+    const meetingSpeakers = await db
+      .select()
+      .from(speakers)
+      .where(eq(speakers.meetingId, id))
+      .orderBy(speakers.percentage); // Order by speaking time
+
     return {
       ...meeting,
-      attendees: meetingAttendees
+      attendees: meetingAttendees,
+      speakers: meetingSpeakers
     };
   }
 
@@ -100,6 +117,64 @@ export class DatabaseStorage implements IStorage {
   async incrementChunkCount(meetingId: string): Promise<void> {
     // This is now handled by adding audio chunks directly
     // Can be used for updating meeting status if needed
+  }
+
+  // Speaker operations
+  async addSpeakers(meetingId: string, speakersList: InsertSpeaker[]): Promise<Speaker[]> {
+    if (speakersList.length === 0) return [];
+    
+    const newSpeakers = await db
+      .insert(speakers)
+      .values(speakersList.map(speaker => ({
+        ...speaker,
+        meetingId
+      })))
+      .returning();
+    
+    return newSpeakers;
+  }
+
+  async getSpeakers(meetingId: string): Promise<Speaker[]> {
+    return await db
+      .select()
+      .from(speakers)
+      .where(eq(speakers.meetingId, meetingId))
+      .orderBy(speakers.percentage); // Order by speaking time percentage
+  }
+
+  async updateSpeakerName(meetingId: string, speakerId: string, name: string): Promise<void> {
+    await db
+      .update(speakers)
+      .set({ speakerName: name })
+      .where(and(eq(speakers.meetingId, meetingId), eq(speakers.speakerId, speakerId)));
+  }
+
+  // Auto-cleanup operations - returns meetings that could need cleanup (app filters by age)
+  async getMeetingsForCleanup(retentionDays?: number): Promise<Meeting[]> {
+    return await db
+      .select()
+      .from(meetings)
+      .where(
+        and(
+          eq(meetings.autoCleanupEnabled, true),
+          eq(meetings.status, 'completed') // Only cleanup completed meetings
+        )
+      )
+      .orderBy(meetings.createdAt);
+  }
+
+  async cleanupMeeting(meetingId: string): Promise<void> {
+    // This will cascade delete attendees, audio_chunks, and speakers due to foreign keys
+    await db
+      .delete(meetings)
+      .where(eq(meetings.id, meetingId));
+  }
+
+  async updateLastCleanup(meetingId: string): Promise<void> {
+    await db
+      .update(meetings)
+      .set({ lastCleanupAt: new Date() })
+      .where(eq(meetings.id, meetingId));
   }
 }
 

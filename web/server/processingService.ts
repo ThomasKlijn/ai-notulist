@@ -1,5 +1,6 @@
 import { storage } from './storage';
 import { transcribeAudio, generateMeetingSummary } from './openai';
+import { transcribeWithSpeakerAnalysis } from './elevenlabs';
 import type { MeetingSummary } from './openai';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -18,8 +19,14 @@ export class MeetingProcessingService {
     // No longer using AudioStorageService - we work directly with temp files
     // Schedule periodic cleanup every 6 hours
     this.cleanupInterval = setInterval(() => {
+      // Clean orphaned audio chunks
       this.cleanupOrphanedChunks(24).catch(err => 
-        console.error('Periodic cleanup failed:', err)
+        console.error('Periodic orphaned chunks cleanup failed:', err)
+      );
+      
+      // Clean old meetings according to retention policy
+      this.runAutoCleanup().catch(err => 
+        console.error('Periodic meeting cleanup failed:', err)
       );
     }, 6 * 60 * 60 * 1000); // 6 hours
   }
@@ -63,14 +70,28 @@ export class MeetingProcessingService {
       // Update status to processing
       await storage.updateMeeting(meetingId, { status: 'processing' });
 
-      // MEMORY-OPTIMIZED: Transcribe chunks sequentially to avoid memory spikes
-      console.log('🎯 OPTIMIZED: Processing audio chunks sequentially...');
-      const transcription = await this.transcribeChunksSequentially(meetingId, meeting.language || 'nl');
+      // MEMORY-OPTIMIZED: Transcribe chunks sequentially WITH SPEAKER DIARIZATION
+      console.log('🎯 OPTIMIZED: Processing audio chunks sequentially with speaker analysis...');
+      const { transcription, speakers } = await this.transcribeChunksWithSpeakers(meetingId, meeting.language || 'nl');
       if (!transcription || transcription.length === 0) {
         throw new Error('No audio data found for transcription');
       }
       
       console.log(`✅ Sequential transcription completed (${transcription.length} chars): ${transcription.substring(0, 100)}...`);
+      console.log(`👥 Speaker analysis: ${speakers.length} speakers detected`);
+      
+      // Save speaker data to database
+      if (speakers.length > 0) {
+        await storage.addSpeakers(meetingId, speakers.map(speaker => ({
+          speakerId: speaker.id,
+          duration: Math.round(speaker.duration),
+          percentage: speaker.percentage
+        })));
+        
+        // Also store raw speaker data as JSONB
+        await storage.updateMeeting(meetingId, { speakerData: speakers as any });
+        console.log(`👥 Saved ${speakers.length} speakers to database`);
+      }
       
       // Generate summary
       console.log('Generating AI summary...');
@@ -92,9 +113,10 @@ export class MeetingProcessingService {
       // Final cleanup of any remaining chunk files
       await this.forceCleanupMeetingChunks(meetingId);
 
-      // Send email summary to attendees
+      // Send email summary to attendees (refetch meeting with speakers)
       console.log(`Starting email delivery for meeting ${meetingId} to ${meeting.attendees.length} attendees`);
-      await this.sendEmailSummary(meeting, transcription, summary);
+      const meetingWithSpeakers = await storage.getMeetingWithAttendees(meetingId);
+      await this.sendEmailSummary(meetingWithSpeakers || meeting, transcription, summary);
 
     } catch (error: any) {
       console.error(`Error processing meeting ${meetingId}:`, error);
@@ -109,12 +131,17 @@ export class MeetingProcessingService {
     }
   }
 
-  // Memory-optimized: Process chunks sequentially instead of loading all in memory
-  private async transcribeChunksSequentially(meetingId: string, language: string): Promise<string> {
-    console.log(`🔄 Starting sequential chunk transcription for meeting ${meetingId}`);
+  // Memory-optimized: Process chunks sequentially WITH SPEAKER DIARIZATION
+  private async transcribeChunksWithSpeakers(meetingId: string, language: string): Promise<{
+    transcription: string;
+    speakers: Array<{ id: string; duration: number; percentage: number; }>;
+  }> {
+    console.log(`🔄 Starting sequential chunk transcription with speaker analysis for meeting ${meetingId}`);
     
     const tempDir = path.join('/tmp', 'audio-chunks');
     let fullTranscription = '';
+    let allSpeakers = new Map<string, { duration: number; segments: number; }>();
+    let totalDuration = 0;
     let processedChunks = 0;
     
     try {
@@ -149,13 +176,24 @@ export class MeetingProcessingService {
             const chunkBuffer = await readFile(chunkFile.filePath);
             console.log(`📥 Chunk ${chunkFile.chunkIndex} size: ${Math.round(chunkBuffer.length / 1024)} KB`);
             
-            // Transcribe this chunk
-            const chunkTranscription = await transcribeAudio(chunkBuffer, language);
+            // Transcribe this chunk WITH speaker analysis  
+            const chunkResult = await transcribeWithSpeakerAnalysis(chunkBuffer, language);
             
             // Add to full transcription with space separator
-            if (chunkTranscription.trim()) {
-              fullTranscription += (fullTranscription ? ' ' : '') + chunkTranscription.trim();
-              console.log(`✅ Chunk ${chunkFile.chunkIndex} transcribed: ${chunkTranscription.length} chars`);
+            if (chunkResult.text.trim()) {
+              fullTranscription += (fullTranscription ? ' ' : '') + chunkResult.text.trim();
+              console.log(`✅ Chunk ${chunkFile.chunkIndex} transcribed: ${chunkResult.text.length} chars, ${chunkResult.speakers.length} speakers`);
+              
+              // Accumulate speaker data
+              totalDuration += chunkResult.totalDuration;
+              for (const speaker of chunkResult.speakers) {
+                if (!allSpeakers.has(speaker.id)) {
+                  allSpeakers.set(speaker.id, { duration: 0, segments: 0 });
+                }
+                const existing = allSpeakers.get(speaker.id)!;
+                existing.duration += speaker.duration;
+                existing.segments++;
+              }
             }
             
             processedChunks++;
@@ -171,8 +209,20 @@ export class MeetingProcessingService {
         }
       }
       
+      // Calculate final speaker percentages
+      const speakers = Array.from(allSpeakers.entries()).map(([id, data]) => ({
+        id,
+        duration: Math.round(data.duration * 10) / 10,
+        percentage: totalDuration > 0 ? Math.round((data.duration / totalDuration) * 100) : 0
+      })).sort((a, b) => b.percentage - a.percentage); // Sort by speaking time
+      
       console.log(`🎉 Sequential transcription completed: ${processedChunks} chunks processed, ${fullTranscription.length} total characters`);
-      return fullTranscription;
+      console.log(`👥 Final speaker analysis: ${speakers.length} unique speakers over ${Math.round(totalDuration)}s`);
+      speakers.forEach(speaker => {
+        console.log(`   - ${speaker.id}: ${speaker.duration}s (${speaker.percentage}%)`);
+      });
+      
+      return { transcription: fullTranscription, speakers };
       
     } catch (error) {
       console.error(`❌ Error in sequential chunk transcription:`, error);
@@ -220,6 +270,120 @@ export class MeetingProcessingService {
     }
   }
   
+  // AUTO-CLEANUP POLICY: Remove old meetings according to retention settings
+  async runAutoCleanup(): Promise<void> {
+    try {
+      console.log('🔄 Running auto-cleanup policy for old meetings...');
+      
+      // Get all meetings that could be candidates for cleanup
+      const meetings = await storage.getMeetingsForCleanup();
+      let cleanedCount = 0;
+      
+      for (const meeting of meetings) {
+        if (!meeting.autoCleanupEnabled) {
+          continue;
+        }
+        
+        const retentionDays = meeting.retentionDays || 30;
+        const cutoffDate = new Date();
+        cutoffDate.setDate(cutoffDate.getDate() - retentionDays);
+        
+        // Check if meeting is older than retention period
+        if (meeting.createdAt <= cutoffDate) {
+          console.log(`🗑️ Auto-cleanup: Meeting "${meeting.title}" (${meeting.id}) is ${retentionDays}+ days old`);
+          
+          try {
+            // Clean up associated audio files first
+            await this.forceCleanupMeetingChunks(meeting.id);
+            
+            // Delete meeting from database (cascades to attendees, speakers, chunks)
+            await storage.cleanupMeeting(meeting.id);
+            
+            cleanedCount++;
+            console.log(`✅ Auto-cleanup: Removed meeting "${meeting.title}" and all associated data`);
+            
+          } catch (error) {
+            console.error(`❌ Auto-cleanup failed for meeting ${meeting.id}:`, error);
+            // Update last cleanup attempt even if failed
+            await storage.updateLastCleanup(meeting.id);
+          }
+        } else {
+          // Meeting is still within retention period, just update last check
+          await storage.updateLastCleanup(meeting.id);
+        }
+      }
+      
+      console.log(`🎉 Auto-cleanup completed: ${cleanedCount} meetings removed`);
+      
+    } catch (error) {
+      console.error('❌ Error during auto-cleanup policy execution:', error);
+    }
+  }
+  
+  // Manual cleanup for specific meeting (for user-triggered deletion)
+  async manualCleanupMeeting(meetingId: string): Promise<void> {
+    try {
+      console.log(`🗑️ Manual cleanup requested for meeting ${meetingId}`);
+      
+      // Clean audio files
+      await this.forceCleanupMeetingChunks(meetingId);
+      
+      // Delete from database
+      await storage.cleanupMeeting(meetingId);
+      
+      console.log(`✅ Manual cleanup completed for meeting ${meetingId}`);
+      
+    } catch (error) {
+      console.error(`❌ Manual cleanup failed for meeting ${meetingId}:`, error);
+      throw error;
+    }
+  }
+  
+  // Configure retention policy for a meeting
+  async updateRetentionPolicy(meetingId: string, retentionDays: number, autoCleanup: boolean = true): Promise<void> {
+    await storage.updateMeeting(meetingId, {
+      retentionDays: retentionDays,
+      autoCleanupEnabled: autoCleanup
+    });
+    
+    console.log(`📝 Updated retention policy for meeting ${meetingId}: ${retentionDays} days, auto-cleanup: ${autoCleanup}`);
+  }
+  
+  // Get cleanup statistics
+  async getCleanupStats(): Promise<{
+    totalMeetings: number;
+    meetingsWithAutoCleanup: number;
+    meetingsEligibleForCleanup: number;
+    averageRetentionDays: number;
+  }> {
+    const meetings = await storage.getMeetingsForCleanup();
+    const withAutoCleanup = meetings.filter(m => m.autoCleanupEnabled);
+    
+    let eligibleCount = 0;
+    let totalRetentionDays = 0;
+    
+    for (const meeting of meetings) {
+      const retentionDays = meeting.retentionDays || 30;
+      totalRetentionDays += retentionDays;
+      
+      if (meeting.autoCleanupEnabled) {
+        const cutoffDate = new Date();
+        cutoffDate.setDate(cutoffDate.getDate() - retentionDays);
+        
+        if (meeting.createdAt <= cutoffDate) {
+          eligibleCount++;
+        }
+      }
+    }
+    
+    return {
+      totalMeetings: meetings.length,
+      meetingsWithAutoCleanup: withAutoCleanup.length,
+      meetingsEligibleForCleanup: eligibleCount,
+      averageRetentionDays: meetings.length > 0 ? Math.round(totalRetentionDays / meetings.length) : 30
+    };
+  }
+  
   // Periodic cleanup of orphaned files (called periodically)
   async cleanupOrphanedChunks(maxAgeHours: number = 24): Promise<void> {
     const tempDir = path.join('/tmp', 'audio-chunks');
@@ -261,7 +425,7 @@ export class MeetingProcessingService {
     }
   }
 
-  // Send email summary to attendees
+  // Send email summary to attendees (with speaker info if available)
   private async sendEmailSummary(
     meeting: any, 
     transcription: string, 
@@ -274,11 +438,18 @@ export class MeetingProcessingService {
       const { emailService } = await import('./emailService');
       
       console.log('EmailService imported, calling sendMeetingSummary...');
+      
+      // Enhance summary with speaker information if available
+      const enhancedSummary = {
+        ...summary,
+        speakers: meeting.speakers || []
+      };
+      
       const success = await emailService.sendMeetingSummary(
         meeting.title,
         meeting.attendees,
         transcription,
-        summary,
+        enhancedSummary,
         meeting.language || 'nl'
       );
 
