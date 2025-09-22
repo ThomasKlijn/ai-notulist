@@ -67,8 +67,25 @@ export class MeetingProcessingService {
         throw new Error(`Meeting ${meetingId} not found`);
       }
 
+      // GDPR: Check consent before starting processing
+      if (!meeting.organizerConsentGiven || !meeting.allAttendeesConsented || meeting.status === 'cancelled') {
+        console.log(`❌ GDPR: Cannot process meeting ${meetingId} - missing consent or cancelled status`);
+        await storage.updateMeeting(meetingId, { 
+          status: 'failed',
+          summary: { error: 'Processing stopped due to missing consent or withdrawal' } as any
+        });
+        return;
+      }
+
       // Update status to processing
       await storage.updateMeeting(meetingId, { status: 'processing' });
+
+      // GDPR: Re-check consent before expensive transcription
+      const consentCheck1 = await storage.getMeeting(meetingId);
+      if (consentCheck1?.status === 'cancelled' || !consentCheck1?.allAttendeesConsented) {
+        console.log(`❌ GDPR: Processing halted during transcription phase - consent withdrawn`);
+        return;
+      }
 
       // MEMORY-OPTIMIZED: Transcribe chunks sequentially WITH SPEAKER DIARIZATION
       console.log('🎯 OPTIMIZED: Processing audio chunks sequentially with speaker analysis...');
@@ -93,6 +110,13 @@ export class MeetingProcessingService {
         console.log(`👥 Saved ${speakers.length} speakers to database`);
       }
       
+      // GDPR: Re-check consent before AI summary generation
+      const consentCheck2 = await storage.getMeeting(meetingId);
+      if (consentCheck2?.status === 'cancelled' || !consentCheck2?.allAttendeesConsented) {
+        console.log(`❌ GDPR: Processing halted during AI summary phase - consent withdrawn`);
+        return;
+      }
+
       // Generate summary
       console.log('Generating AI summary...');
       const summary = await generateMeetingSummary(
@@ -112,6 +136,13 @@ export class MeetingProcessingService {
       
       // Final cleanup of any remaining chunk files
       await this.forceCleanupMeetingChunks(meetingId);
+
+      // GDPR: Final consent check before email delivery
+      const consentCheck3 = await storage.getMeeting(meetingId);
+      if (consentCheck3?.status === 'cancelled' || !consentCheck3?.allAttendeesConsented) {
+        console.log(`❌ GDPR: Email delivery halted - consent withdrawn`);
+        return;
+      }
 
       // Send email summary to attendees (refetch meeting with speakers)
       console.log(`Starting email delivery for meeting ${meetingId} to ${meeting.attendees.length} attendees`);
@@ -166,10 +197,19 @@ export class MeetingProcessingService {
         throw new Error('No audio chunks found for transcription');
       }
       
-      // Process each chunk individually
+      // Process each chunk individually with per-chunk consent checks
       for (const chunkFile of chunkFiles) {
         if (chunkFile && fs.existsSync(chunkFile.filePath)) {
           try {
+            // GDPR: Check consent before processing each chunk for immediate halt
+            const consentCheck = await storage.getMeeting(meetingId);
+            if (consentCheck?.status === 'cancelled' || !consentCheck?.allAttendeesConsented) {
+              console.log(`❌ GDPR: Transcription halted at chunk ${chunkFile.chunkIndex} - consent withdrawn`);
+              // Force cleanup of remaining chunks when halted
+              await this.forceCleanupMeetingChunks(meetingId);
+              throw new Error('Processing halted due to consent withdrawal');
+            }
+            
             console.log(`🎙️ Processing chunk ${chunkFile.chunkIndex} (${processedChunks + 1}/${chunkFiles.length})...`);
             
             // Read chunk into memory temporarily

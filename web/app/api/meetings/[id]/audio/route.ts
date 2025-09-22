@@ -9,7 +9,18 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     const { id } = await params;
     
     // Require authentication and meeting ownership
-    await requireMeetingOwnership(req, id);
+    const { meeting } = await requireMeetingOwnership(req, id);
+    
+    // GDPR: Require full consent before accepting audio
+    if (!meeting.organizerConsentGiven || !meeting.allAttendeesConsented) {
+      return NextResponse.json({ 
+        error: 'Audio recording is not permitted - missing required consent from organizer or attendees',
+        consent_status: {
+          organizer_consent: meeting.organizerConsentGiven,
+          all_attendees_consent: meeting.allAttendeesConsented
+        }
+      }, { status: 403 });
+    }
 
     const form = await req.formData();
     const file = form.get('chunk') as File | null;

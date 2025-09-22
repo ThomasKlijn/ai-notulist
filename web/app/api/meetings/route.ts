@@ -37,8 +37,8 @@ export async function POST(req: NextRequest) {
       title,
       language: language ?? 'nl',
       status: 'recording' as const,
-      consentGiven,
-      consentTimestamp: new Date()
+      organizerConsentGiven: consentGiven,
+      organizerConsentTimestamp: new Date()
     };
 
     // Create meeting with attendees and link to authenticated user
@@ -48,7 +48,35 @@ export async function POST(req: NextRequest) {
       user.id
     );
     
-    return NextResponse.json({ id: meeting.id });
+    // Send consent emails to all attendees (background process)
+    setTimeout(async () => {
+      try {
+        const { EmailService } = await import('../../../lib/emailService');
+        const meetingWithAttendees = await storage.getMeetingWithAttendees(meeting.id);
+        
+        if (meetingWithAttendees?.attendees) {
+          for (const attendee of meetingWithAttendees.attendees) {
+            if (attendee.consentToken) {
+              await EmailService.sendConsentRequest({
+                attendeeName: attendee.name,
+                attendeeEmail: attendee.email,
+                meetingTitle: meeting.title,
+                organizerName: `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Meeting organizer',
+                consentToken: attendee.consentToken,
+                meetingDate: new Date(meeting.createdAt).toLocaleDateString()
+              });
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Failed to send consent emails:', error);
+      }
+    }, 100); // Small delay to avoid blocking response
+    
+    return NextResponse.json({ 
+      id: meeting.id,
+      message: 'Meeting created. Consent emails sent to attendees.'
+    });
   } catch (e: any) {
     if (e.message === 'Authentication required') {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });

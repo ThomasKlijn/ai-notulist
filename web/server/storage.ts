@@ -28,6 +28,11 @@ export interface IStorage {
   // User operations (required for Replit Auth)
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
+  
+  // GDPR Consent Management
+  getAttendeeByConsentToken(token: string): Promise<(Attendee & { meetingId: string }) | null>;
+  updateAttendeeConsent(token: string, consentGiven: boolean): Promise<{ meetingId: string } | null>;
+  updateMeetingConsentStatus(meetingId: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -40,13 +45,14 @@ export class DatabaseStorage implements IStorage {
         .values({ ...meeting, userId })
         .returning();
       
-      // Insert attendees
+      // Insert attendees with consent tokens
       if (attendeesList.length > 0) {
         await tx
           .insert(attendees)
           .values(attendeesList.map(attendee => ({
             ...attendee,
-            meetingId: newMeeting.id
+            meetingId: newMeeting.id,
+            consentToken: crypto.randomUUID() // Generate unique consent token for each attendee
           })));
       }
       
@@ -200,6 +206,117 @@ export class DatabaseStorage implements IStorage {
       })
       .returning();
     return user;
+  }
+
+  // GDPR Consent Management Implementation
+  async getAttendeeByConsentToken(token: string): Promise<(Attendee & { meetingId: string }) | null> {
+    const [attendee] = await db
+      .select()
+      .from(attendees)
+      .where(eq(attendees.consentToken, token));
+    
+    return attendee || null;
+  }
+
+  async updateAttendeeConsent(token: string, consentGiven: boolean): Promise<{ meetingId: string } | null> {
+    const timestamp = new Date();
+    
+    return await db.transaction(async (tx) => {
+      // Update attendee consent status
+      const [result] = await tx
+        .update(attendees)
+        .set({
+          consentGiven,
+          consentTimestamp: consentGiven ? timestamp : attendees.consentTimestamp, // Preserve original timestamp
+          consentWithdrawn: !consentGiven,
+          withdrawalTimestamp: !consentGiven ? timestamp : null
+        })
+        .where(eq(attendees.consentToken, token))
+        .returning({ meetingId: attendees.meetingId });
+      
+      if (!result) return null;
+      
+      // GDPR: If consent withdrawn, delete audio data and cleanup temp files
+      if (!consentGiven) {
+        await this.handleConsentWithdrawal(result.meetingId, tx);
+        
+        // Immediate cleanup of temp files (import dynamically to avoid circular deps)
+        try {
+          const { processingService } = await import('./processingService');
+          await processingService.forceCleanupMeetingChunks(result.meetingId);
+        } catch (error) {
+          console.error('Failed to cleanup temp files after consent withdrawal:', error);
+        }
+      }
+      
+      return result;
+    });
+  }
+
+  // GDPR Data Deletion on Consent Withdrawal
+  private async handleConsentWithdrawal(meetingId: string, tx?: any) {
+    const dbConn = tx || db;
+    
+    // Get all audio chunks to delete binary data
+    const chunks = await dbConn
+      .select()
+      .from(audioChunks)
+      .where(eq(audioChunks.meetingId, meetingId));
+    
+    // Delete binary audio data from object storage
+    try {
+      const { AudioStorageService } = await import('./audioStorage');
+      const audioStorageService = new AudioStorageService();
+      
+      for (const chunk of chunks) {
+        if (chunk.objectPath) {
+          await audioStorageService.deleteAudioChunk(chunk.objectPath);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to delete audio binaries from storage:', error);
+      // Continue with DB cleanup even if binary deletion fails
+    }
+    
+    // Delete audio chunk metadata from database
+    await dbConn
+      .delete(audioChunks)
+      .where(eq(audioChunks.meetingId, meetingId));
+    
+    // Clear transcription and summary data
+    await dbConn
+      .update(meetings)
+      .set({
+        transcription: null,
+        summary: null,
+        speakerData: null,
+        status: 'cancelled' // Mark as cancelled due to consent withdrawal
+      })
+      .where(eq(meetings.id, meetingId));
+    
+    // Delete speaker analysis data
+    await dbConn
+      .delete(speakers)
+      .where(eq(speakers.meetingId, meetingId));
+    
+    console.log(`GDPR: Complete data deletion (DB + binaries) for meeting ${meetingId} due to consent withdrawal`);
+  }
+
+  async updateMeetingConsentStatus(meetingId: string): Promise<void> {
+    // Check if all attendees have consented
+    const attendeesList = await db
+      .select()
+      .from(attendees)
+      .where(eq(attendees.meetingId, meetingId));
+    
+    const allConsented = attendeesList.length > 0 && 
+      attendeesList.every(attendee => attendee.consentGiven && !attendee.consentWithdrawn);
+    
+    // Update meeting status
+    await db
+      .update(meetings)
+      .set({ allAttendeesConsented: allConsented })
+      .where(eq(meetings.id, meetingId));
   }
 }
 

@@ -18,8 +18,9 @@ export const meetings = pgTable('meetings', {
   autoCleanupEnabled: boolean('auto_cleanup_enabled').default(true).notNull(),
   lastCleanupAt: timestamp('last_cleanup_at'),
   userId: varchar('user_id').notNull(), // Link meetings to users
-  consentGiven: boolean('consent_given').notNull().default(false),
-  consentTimestamp: timestamp('consent_timestamp'),
+  organizerConsentGiven: boolean('organizer_consent_given').notNull().default(false),
+  organizerConsentTimestamp: timestamp('organizer_consent_timestamp'),
+  allAttendeesConsented: boolean('all_attendees_consented').default(false).notNull(),
 });
 
 // Attendees table
@@ -29,6 +30,13 @@ export const attendees = pgTable('attendees', {
   name: varchar('name', { length: 255 }),
   email: varchar('email', { length: 255 }).notNull(),
   role: varchar('role', { length: 100 }),
+  // GDPR Consent tracking per attendee
+  consentGiven: boolean('consent_given').default(false).notNull(),
+  consentTimestamp: timestamp('consent_timestamp'),
+  consentPolicyVersion: varchar('consent_policy_version', { length: 20 }).default('v1.0'),
+  consentWithdrawn: boolean('consent_withdrawn').default(false).notNull(),
+  withdrawalTimestamp: timestamp('withdrawal_timestamp'),
+  consentToken: varchar('consent_token', { length: 64 }), // Unique token for consent links
 });
 
 // Audio chunks table - tracks audio file segments
@@ -132,12 +140,19 @@ export const insertMeetingSchema = createInsertSchema(meetings).omit({
   speakerData: true,
   lastCleanupAt: true,
   userId: true,
-  consentTimestamp: true,
+  organizerConsentTimestamp: true,
+  allAttendeesConsented: true,
 });
 
 export const insertAttendeeSchema = createInsertSchema(attendees).omit({
   id: true,
   meetingId: true,
+  consentGiven: true,
+  consentTimestamp: true,
+  consentPolicyVersion: true,
+  consentWithdrawn: true,
+  withdrawalTimestamp: true,
+  consentToken: true,
 });
 
 export const insertAudioChunkSchema = createInsertSchema(audioChunks).omit({

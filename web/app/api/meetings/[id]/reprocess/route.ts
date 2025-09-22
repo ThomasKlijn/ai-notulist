@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { storage } from '../../../../../server/storage';
 import { requireMeetingOwnership } from '../../../../../lib/ownershipMiddleware';
 
-// Use Node.js runtime for file system operations in processingService
 export const runtime = 'nodejs';
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -12,29 +10,29 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     // Require authentication and meeting ownership
     const { meeting } = await requireMeetingOwnership(req, id);
     
-    // GDPR: Require full consent before processing
+    // GDPR: Require full consent before reprocessing
     if (!meeting.organizerConsentGiven || !meeting.allAttendeesConsented) {
       return NextResponse.json({ 
-        error: 'Meeting processing is not permitted - missing required consent',
+        error: 'Reprocessing is not permitted - missing required consent from organizer or attendees',
         consent_status: {
           organizer_consent: meeting.organizerConsentGiven,
           all_attendees_consent: meeting.allAttendeesConsented
         }
       }, { status: 403 });
     }
-
-    // Mark meeting as finished and set processing status
-    await storage.finishMeeting(id);
     
-    // Trigger background processing for speech-to-text and AI summarization
+    // Trigger reprocessing
     const { processingService } = await import('../../../../../server/processingService');
     
     // Process in background (don't await to avoid timeout)
     processingService.processMeeting(id).catch(error => {
-      console.error(`Background processing failed for meeting ${id}:`, error);
+      console.error(`Background reprocessing failed for meeting ${id}:`, error);
     });
     
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ 
+      ok: true,
+      message: 'Meeting reprocessing started'
+    });
   } catch (error: any) {
     if (error.name === 'NotFound') {
       return NextResponse.json({ error: 'Meeting niet gevonden' }, { status: 404 });
@@ -45,7 +43,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     if (error.message === 'Authentication required') {
       return NextResponse.json({ error: 'Authenticatie vereist' }, { status: 401 });
     }
-    console.error('Error finishing meeting:', error);
-    return NextResponse.json({ error: 'Fout bij afronden meeting' }, { status: 500 });
+    console.error('Error reprocessing meeting:', error);
+    return NextResponse.json({ error: 'Fout bij herverwerken meeting' }, { status: 500 });
   }
 }
