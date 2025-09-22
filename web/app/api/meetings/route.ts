@@ -7,7 +7,10 @@ import { z } from 'zod';
 const createMeetingSchema = z.object({
   title: z.string().min(1),
   language: z.string().optional(),
-  attendees: z.array(insertAttendeeSchema).min(1)
+  attendees: z.array(insertAttendeeSchema).min(1),
+  consentGiven: z.boolean().refine(val => val === true, {
+    message: "Privacy consent is required to create a meeting"
+  })
 });
 
 export async function POST(req: NextRequest) {
@@ -26,14 +29,16 @@ export async function POST(req: NextRequest) {
       }, { status: 400 });
     }
 
-    const { title, attendees, language } = validation.data;
+    const { title, attendees, language, consentGiven } = validation.data;
     
     const id = crypto.randomUUID();
     const meetingData = {
       id,
       title,
       language: language ?? 'nl',
-      status: 'recording' as const
+      status: 'recording' as const,
+      consentGiven,
+      consentTimestamp: new Date()
     };
 
     // Create meeting with attendees and link to authenticated user

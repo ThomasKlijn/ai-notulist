@@ -102,6 +102,25 @@ export default function Home() {
           </p>
         </div>
       </div>
+      
+      <footer style={{ 
+        marginTop: '64px', 
+        padding: '24px', 
+        borderTop: '1px solid #e5e7eb',
+        fontSize: '14px',
+        color: '#6b7280',
+        textAlign: 'center'
+      }}>
+        <p style={{ marginBottom: '8px' }}>
+          Door AI Notulist te gebruiken, gaat u akkoord met het verwerken van audio-opnames voor 
+          transcriptie en AI-samenvatting doeleinden.
+        </p>
+        <p>
+          <a href="/privacy" style={{ color: '#3b82f6', textDecoration: 'underline' }}>
+            Lees onze privacyverklaring
+          </a> voor meer informatie over gegevensbescherming en uw rechten.
+        </p>
+      </footer>
     </main>
   );
 }

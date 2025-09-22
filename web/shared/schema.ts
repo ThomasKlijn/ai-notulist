@@ -18,6 +18,8 @@ export const meetings = pgTable('meetings', {
   autoCleanupEnabled: boolean('auto_cleanup_enabled').default(true).notNull(),
   lastCleanupAt: timestamp('last_cleanup_at'),
   userId: varchar('user_id').notNull(), // Link meetings to users
+  consentGiven: boolean('consent_given').notNull().default(false),
+  consentTimestamp: timestamp('consent_timestamp'),
 });
 
 // Attendees table
@@ -130,6 +132,7 @@ export const insertMeetingSchema = createInsertSchema(meetings).omit({
   speakerData: true,
   lastCleanupAt: true,
   userId: true,
+  consentTimestamp: true,
 });
 
 export const insertAttendeeSchema = createInsertSchema(attendees).omit({
