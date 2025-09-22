@@ -14,7 +14,7 @@
     "@neondatabase/serverless": "^1.0.1",
     "@sendgrid/mail": "^8.1.5",
     "drizzle-orm": "^0.44.5",
-    "drizzle-zod": "^0.8.3",
+    "drizzle-zod": "^0.5.1",
     "next": "^15.5.3",
     "openai": "^4.104.0",
     "react": "^19.1.1",
