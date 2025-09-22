@@ -3,10 +3,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-// Force no caching and dynamic rendering
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-
 export default function LoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
