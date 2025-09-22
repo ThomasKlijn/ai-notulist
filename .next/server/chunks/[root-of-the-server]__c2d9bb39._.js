@@ -618,7 +618,8 @@ function simpleDecode(token) {
     }
 }
 async function createSession(userId) {
-    const sessionId = crypto.randomUUID();
+    // Generate 32-char hex string (compatible with short DB columns)
+    const sessionId = Array.from(crypto.getRandomValues(new Uint8Array(16))).map((b)=>b.toString(16).padStart(2, '0')).join('');
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
     await __TURBOPACK__imported__module__$5b$project$5d2f$server$2f$db$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["db"].insert(__TURBOPACK__imported__module__$5b$project$5d2f$shared$2f$schema$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["sessions"]).values({
         sid: sessionId,
@@ -732,33 +733,26 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$simple$2d$auth$2e$ts_
 ;
 async function getAuthenticatedUser(req) {
     try {
-        // Try to get from cookies first
+        // Simple approach: just check if user has valid session token
         let sessionToken = req.cookies.get('session-token')?.value;
         // Fallback to headers if not in cookies
         if (!sessionToken) {
             const authHeader = req.headers.get('cookie');
-            console.log('Cookie header:', authHeader);
             if (authHeader) {
                 const match = authHeader.match(/session-token=([^;]+)/);
                 if (match) {
                     sessionToken = decodeURIComponent(match[1]);
-                    console.log('Extracted token from header:', sessionToken?.substring(0, 50) + '...');
                 }
             }
-        } else {
-            console.log('Token from cookies:', sessionToken?.substring(0, 50) + '...');
         }
         if (!sessionToken) {
-            console.log('No session token found in cookies or headers');
             return null;
         }
-        console.log('Found session token, validating...');
+        // Use proper session validation through database
         const sessionData = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$simple$2d$auth$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["getSession"])(sessionToken);
         if (!sessionData) {
-            console.log('Session validation failed');
             return null;
         }
-        console.log('Session valid for user:', sessionData.userId);
         return {
             id: sessionData.userId
         };

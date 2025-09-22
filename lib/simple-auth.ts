@@ -27,7 +27,10 @@ function simpleDecode(token: string): any | null {
 
 // Session management functions
 export async function createSession(userId: string): Promise<string> {
-  const sessionId = crypto.randomUUID();
+  // Generate 32-char hex string (compatible with short DB columns)
+  const sessionId = Array.from(crypto.getRandomValues(new Uint8Array(16)))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
   const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
   
   await db.insert(sessions).values({

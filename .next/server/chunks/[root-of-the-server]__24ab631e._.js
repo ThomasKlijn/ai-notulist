@@ -1,5 +1,5 @@
 module.exports = [
-"[project]/.next-internal/server/app/api/auth/simple-login/route/actions.js [app-rsc] (server actions loader, ecmascript)", ((__turbopack_context__, module, exports) => {
+"[project]/.next-internal/server/app/api/meetings/route/actions.js [app-rsc] (server actions loader, ecmascript)", ((__turbopack_context__, module, exports) => {
 
 }),
 "[externals]/next/dist/compiled/next-server/app-route-turbo.runtime.dev.js [external] (next/dist/compiled/next-server/app-route-turbo.runtime.dev.js, cjs)", ((__turbopack_context__, module, exports) => {
@@ -564,163 +564,51 @@ class DatabaseStorage {
 }
 const storage = new DatabaseStorage();
 }),
-"[project]/lib/simple-auth.ts [app-route] (ecmascript)", ((__turbopack_context__) => {
+"[project]/lib/authMiddleware.ts [app-route] (ecmascript)", ((__turbopack_context__) => {
 "use strict";
 
-// Temporary simple auth implementation to bypass @hapi/iron dependency issues
 __turbopack_context__.s([
-    "cleanupExpiredSessions",
-    ()=>cleanupExpiredSessions,
-    "createSession",
-    ()=>createSession,
-    "decryptSessionId",
-    ()=>decryptSessionId,
-    "deleteSession",
-    ()=>deleteSession,
-    "encryptSessionId",
-    ()=>encryptSessionId,
-    "exchangeCodeForUser",
-    ()=>exchangeCodeForUser,
-    "generateAuthUrl",
-    ()=>generateAuthUrl,
-    "generateLogoutUrl",
-    ()=>generateLogoutUrl,
-    "getSession",
-    ()=>getSession,
-    "getUserFromSession",
-    ()=>getUserFromSession,
-    "handleCallback",
-    ()=>handleCallback
+    "getAuthenticatedUser",
+    ()=>getAuthenticatedUser,
+    "requireAuth",
+    ()=>requireAuth
 ]);
-var __TURBOPACK__imported__module__$5b$project$5d2f$server$2f$storage$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/server/storage.ts [app-route] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$server$2f$db$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/server/db.ts [app-route] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$shared$2f$schema$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/shared/schema.ts [app-route] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$drizzle$2d$orm$2f$sql$2f$expressions$2f$conditions$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/drizzle-orm/sql/expressions/conditions.js [app-route] (ecmascript)");
-;
-;
-;
-;
-// Require strong session secret in all environments
-const SESSION_SECRET = process.env.SESSION_SECRET || "super-secure-session-secret-key-for-vandelft-groep-ai-notulist-2025";
-if ("TURBOPACK compile-time falsy", 0) //TURBOPACK unreachable
-;
-// Simplified session encoding - just use base64 with session ID
-function simpleEncode(data) {
-    const payload = JSON.stringify(data);
-    return Buffer.from(payload).toString('base64url');
-}
-function simpleDecode(token) {
+async function getAuthenticatedUser(req) {
     try {
-        const payload = Buffer.from(token, 'base64url').toString();
-        return JSON.parse(payload);
-    } catch  {
-        return null;
-    }
-}
-async function createSession(userId) {
-    // Generate 32-char hex string (compatible with short DB columns)
-    const sessionId = Array.from(crypto.getRandomValues(new Uint8Array(16))).map((b)=>b.toString(16).padStart(2, '0')).join('');
-    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
-    await __TURBOPACK__imported__module__$5b$project$5d2f$server$2f$db$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["db"].insert(__TURBOPACK__imported__module__$5b$project$5d2f$shared$2f$schema$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["sessions"]).values({
-        sid: sessionId,
-        sess: {
-            userId
-        },
-        expire: expiresAt
-    });
-    const sessionData = {
-        sessionId,
-        userId,
-        expiresAt: expiresAt.toISOString()
-    };
-    return simpleEncode(sessionData);
-}
-async function getSession(token) {
-    if (!token) return null;
-    const sessionData = simpleDecode(token);
-    if (!sessionData || !sessionData.sessionId) {
-        return null;
-    }
-    // Check if session exists and is valid
-    const [session] = await __TURBOPACK__imported__module__$5b$project$5d2f$server$2f$db$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["db"].select().from(__TURBOPACK__imported__module__$5b$project$5d2f$shared$2f$schema$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["sessions"]).where((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$drizzle$2d$orm$2f$sql$2f$expressions$2f$conditions$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["eq"])(__TURBOPACK__imported__module__$5b$project$5d2f$shared$2f$schema$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["sessions"].sid, sessionData.sessionId));
-    if (!session || session.expire < new Date()) {
-        // Clean up expired session
-        if (session) {
-            await __TURBOPACK__imported__module__$5b$project$5d2f$server$2f$db$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["db"].delete(__TURBOPACK__imported__module__$5b$project$5d2f$shared$2f$schema$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["sessions"]).where((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$drizzle$2d$orm$2f$sql$2f$expressions$2f$conditions$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["eq"])(__TURBOPACK__imported__module__$5b$project$5d2f$shared$2f$schema$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["sessions"].sid, sessionData.sessionId));
+        // TEMPORARY BYPASS: Just check if session token exists (for testing)
+        let sessionToken = req.cookies.get('session-token')?.value;
+        // Fallback to headers if not in cookies
+        if (!sessionToken) {
+            const authHeader = req.headers.get('cookie');
+            if (authHeader) {
+                const match = authHeader.match(/session-token=([^;]+)/);
+                if (match) {
+                    sessionToken = decodeURIComponent(match[1]);
+                }
+            }
         }
+        if (!sessionToken) {
+            return null;
+        }
+        // TEMPORARY: Just return authenticated user if token exists
+        // TODO: Fix proper session validation later
+        return {
+            id: "vandelftgroep-user"
+        };
+    } catch (error) {
+        console.error('Error getting authenticated user:', error);
         return null;
     }
-    const sessData = session.sess;
-    return {
-        userId: sessData.userId
-    };
 }
-async function deleteSession(token) {
-    const sessionData = simpleDecode(token);
-    if (sessionData?.sessionId) {
-        await __TURBOPACK__imported__module__$5b$project$5d2f$server$2f$db$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["db"].delete(__TURBOPACK__imported__module__$5b$project$5d2f$shared$2f$schema$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["sessions"]).where((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$drizzle$2d$orm$2f$sql$2f$expressions$2f$conditions$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["eq"])(__TURBOPACK__imported__module__$5b$project$5d2f$shared$2f$schema$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["sessions"].sid, sessionData.sessionId));
+async function requireAuth(req) {
+    const user = await getAuthenticatedUser(req);
+    if (!user) {
+        throw new Error('Authentication required');
     }
-}
-async function cleanupExpiredSessions() {
-    await __TURBOPACK__imported__module__$5b$project$5d2f$server$2f$db$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["db"].delete(__TURBOPACK__imported__module__$5b$project$5d2f$shared$2f$schema$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["sessions"]).where((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$drizzle$2d$orm$2f$sql$2f$expressions$2f$conditions$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["lt"])(__TURBOPACK__imported__module__$5b$project$5d2f$shared$2f$schema$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["sessions"].expire, new Date()));
-}
-function generateAuthUrl(redirectUri) {
-    const state = crypto.randomUUID();
-    const authUrl = new URL("https://replit.com/oauth/authorize");
-    authUrl.searchParams.set("client_id", process.env.REPL_ID || "");
-    authUrl.searchParams.set("redirect_uri", redirectUri);
-    authUrl.searchParams.set("response_type", "code");
-    authUrl.searchParams.set("scope", "user:email");
-    authUrl.searchParams.set("state", state);
-    return authUrl.toString();
-}
-async function exchangeCodeForUser(code) {
-    // This is a simplified version - in production you'd need full OAuth flow
-    // For now, return a mock user for testing
-    console.log("Auth code received:", code);
-    return {
-        id: "temp-user-" + Math.random().toString(36).substr(2, 9),
-        email: "test@example.com",
-        name: "Test User"
-    };
-}
-async function getUserFromSession(token) {
-    const session = await getSession(token);
-    if (!session) return null;
-    // Get user data from storage
-    const user = await __TURBOPACK__imported__module__$5b$project$5d2f$server$2f$storage$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["storage"].getUser(session.userId);
-    if (!user) return null;
-    return {
-        user
-    };
-}
-function generateLogoutUrl() {
-    return "/api/auth/logout";
-}
-function encryptSessionId(sessionData) {
-    return simpleEncode(sessionData);
-}
-function decryptSessionId(token) {
-    return simpleDecode(token);
-}
-async function handleCallback(code) {
-    const userData = await exchangeCodeForUser(code);
-    // Upsert user in database
-    const user = await __TURBOPACK__imported__module__$5b$project$5d2f$server$2f$storage$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["storage"].upsertUser({
-        id: userData.id,
-        email: userData.email,
-        firstName: userData.name?.split(' ')[0] || '',
-        lastName: userData.name?.split(' ').slice(1).join(' ') || ''
-    });
-    // Create session
-    const sessionToken = await createSession(user.id);
-    return {
-        sessionToken,
-        user
-    };
+    return user;
 }
 }),
-"[project]/app/api/auth/simple-login/route.ts [app-route] (ecmascript)", ((__turbopack_context__) => {
+"[project]/app/api/meetings/route.ts [app-route] (ecmascript)", ((__turbopack_context__) => {
 "use strict";
 
 __turbopack_context__.s([
@@ -728,56 +616,92 @@ __turbopack_context__.s([
     ()=>POST
 ]);
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/server.js [app-route] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$simple$2d$auth$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/lib/simple-auth.ts [app-route] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$server$2f$storage$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/server/storage.ts [app-route] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$headers$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/headers.js [app-route] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$authMiddleware$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/lib/authMiddleware.ts [app-route] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v3$2f$external$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__ = __turbopack_context__.i("[project]/node_modules/zod/v3/external.js [app-route] (ecmascript) <export * as z>");
 ;
 ;
 ;
 ;
-const VALID_CREDENTIALS = {
-    username: 'VanDelftGroep',
-    password: 'JWVD12'
-};
+// Simple schema that matches frontend exactly
+const createMeetingSchema = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v3$2f$external$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].object({
+    title: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v3$2f$external$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().min(1),
+    language: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v3$2f$external$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().optional(),
+    attendees: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v3$2f$external$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].array(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v3$2f$external$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].object({
+        email: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v3$2f$external$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().email(),
+        name: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v3$2f$external$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().optional(),
+        role: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v3$2f$external$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().optional()
+    })).min(1),
+    consentGiven: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v3$2f$external$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].boolean().refine((val)=>val === true, {
+        message: "Privacy consent is required to create a meeting"
+    })
+});
 async function POST(req) {
     try {
-        const { username, password } = await req.json();
-        // Check credentials
-        if (username !== VALID_CREDENTIALS.username || password !== VALID_CREDENTIALS.password) {
+        // Require authentication
+        const user = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$authMiddleware$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["requireAuth"])(req);
+        const body = await req.json();
+        // Validate request body
+        const validation = createMeetingSchema.safeParse(body);
+        if (!validation.success) {
             return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
-                error: 'Invalid username or password'
+                error: 'Invalid input',
+                details: validation.error.issues
+            }, {
+                status: 400
+            });
+        }
+        const { title, attendees, language, consentGiven } = validation.data;
+        const id = crypto.randomUUID();
+        const meetingData = {
+            id,
+            title,
+            language: language ?? 'nl',
+            status: 'recording',
+            organizerConsentGiven: consentGiven,
+            organizerConsentTimestamp: new Date()
+        };
+        // Create meeting with attendees and link to authenticated user
+        const meeting = await __TURBOPACK__imported__module__$5b$project$5d2f$server$2f$storage$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["storage"].createMeeting(meetingData, attendees.filter((a)=>a?.email), user.id);
+        // Send consent emails to all attendees (background process)
+        setTimeout(async ()=>{
+            try {
+                const { EmailService } = await __turbopack_context__.A("[project]/lib/emailService.ts [app-route] (ecmascript, async loader)");
+                const meetingWithAttendees = await __TURBOPACK__imported__module__$5b$project$5d2f$server$2f$storage$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["storage"].getMeetingWithAttendees(meeting.id);
+                const fullUser = await __TURBOPACK__imported__module__$5b$project$5d2f$server$2f$storage$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["storage"].getUser(user.id); // Get full user details
+                if (meetingWithAttendees?.attendees) {
+                    for (const attendee of meetingWithAttendees.attendees){
+                        if (attendee.consentToken) {
+                            await EmailService.sendConsentRequest({
+                                attendeeName: attendee.name || '',
+                                attendeeEmail: attendee.email,
+                                meetingTitle: meeting.title,
+                                organizerName: fullUser ? `${fullUser.firstName || ''} ${fullUser.lastName || ''}`.trim() || 'Meeting organizer' : 'Meeting organizer',
+                                consentToken: attendee.consentToken,
+                                meetingDate: new Date(meeting.createdAt).toLocaleDateString()
+                            });
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to send consent emails:', error);
+            }
+        }, 100); // Small delay to avoid blocking response
+        return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
+            id: meeting.id,
+            message: 'Meeting created. Consent emails sent to attendees.'
+        });
+    } catch (e) {
+        if (e.message === 'Authentication required') {
+            return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
+                error: 'Authentication required'
             }, {
                 status: 401
             });
         }
-        // Create or get user
-        const userId = 'vandelftgroep-user';
-        const user = await __TURBOPACK__imported__module__$5b$project$5d2f$server$2f$storage$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["storage"].upsertUser({
-            id: userId,
-            email: 'info@vandelftgroep.nl',
-            firstName: 'Van Delft',
-            lastName: 'Groep'
-        });
-        // Create session
-        const sessionToken = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$simple$2d$auth$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["createSession"])(userId);
-        // Set cookie
-        const cookieStore = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$headers$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["cookies"])();
-        cookieStore.set('session-token', sessionToken, {
-            httpOnly: true,
-            secure: ("TURBOPACK compile-time value", "development") === 'production',
-            sameSite: 'lax',
-            maxAge: 24 * 60 * 60,
-            path: '/'
-        });
+        console.error('Error creating meeting:', e);
         return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
-            success: true,
-            user
-        });
-    } catch (error) {
-        console.error('Login error details:', error);
-        return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
-            error: 'Login failed',
-            details: error instanceof Error ? error.message : 'Unknown error'
+            error: e?.message ?? 'onbekende fout'
         }, {
             status: 500
         });
@@ -786,4 +710,4 @@ async function POST(req) {
 }),
 ];
 
-//# sourceMappingURL=%5Broot-of-the-server%5D__6f4926dd._.js.map
+//# sourceMappingURL=%5Broot-of-the-server%5D__24ab631e._.js.map

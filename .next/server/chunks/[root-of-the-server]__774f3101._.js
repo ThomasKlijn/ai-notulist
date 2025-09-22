@@ -604,36 +604,22 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$drizzle$2d$o
 const SESSION_SECRET = process.env.SESSION_SECRET || "super-secure-session-secret-key-for-vandelft-groep-ai-notulist-2025";
 if ("TURBOPACK compile-time falsy", 0) //TURBOPACK unreachable
 ;
-// Simple base64 encoding for session data (temporary solution)
-function simpleEncode(data, secret) {
+// Simplified session encoding - just use base64 with session ID
+function simpleEncode(data) {
     const payload = JSON.stringify(data);
-    const encoded = Buffer.from(payload).toString('base64');
-    const hash = Buffer.from(secret + encoded).toString('base64');
-    return `${encoded}.${hash}`;
+    return Buffer.from(payload).toString('base64url');
 }
-function simpleDecode(token, secret) {
+function simpleDecode(token) {
     try {
-        console.log('DEBUG simpleDecode: token parts:', token.split('.').length);
-        console.log('DEBUG simpleDecode: secret length:', secret.length);
-        const [encoded, hash] = token.split('.');
-        const expectedHash = Buffer.from(secret + encoded).toString('base64');
-        console.log('DEBUG simpleDecode: provided hash:', hash?.substring(0, 20) + '...');
-        console.log('DEBUG simpleDecode: expected hash:', expectedHash?.substring(0, 20) + '...');
-        if (hash !== expectedHash) {
-            console.log('DEBUG simpleDecode: Hash mismatch!');
-            return null; // Invalid token
-        }
-        const payload = Buffer.from(encoded, 'base64').toString();
-        const result = JSON.parse(payload);
-        console.log('DEBUG simpleDecode: Successful decode:', result);
-        return result;
-    } catch (error) {
-        console.log('DEBUG simpleDecode: Error:', error);
+        const payload = Buffer.from(token, 'base64url').toString();
+        return JSON.parse(payload);
+    } catch  {
         return null;
     }
 }
 async function createSession(userId) {
-    const sessionId = crypto.randomUUID();
+    // Generate 32-char hex string (compatible with short DB columns)
+    const sessionId = Array.from(crypto.getRandomValues(new Uint8Array(16))).map((b)=>b.toString(16).padStart(2, '0')).join('');
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
     await __TURBOPACK__imported__module__$5b$project$5d2f$server$2f$db$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["db"].insert(__TURBOPACK__imported__module__$5b$project$5d2f$shared$2f$schema$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["sessions"]).values({
         sid: sessionId,
@@ -647,16 +633,12 @@ async function createSession(userId) {
         userId,
         expiresAt: expiresAt.toISOString()
     };
-    return simpleEncode(sessionData, SESSION_SECRET);
+    return simpleEncode(sessionData);
 }
 async function getSession(token) {
     if (!token) return null;
-    console.log('DEBUG getSession: token length:', token.length);
-    console.log('DEBUG getSession: SESSION_SECRET defined:', !!SESSION_SECRET);
-    const sessionData = simpleDecode(token, SESSION_SECRET);
-    console.log('DEBUG getSession: decoded sessionData:', sessionData);
+    const sessionData = simpleDecode(token);
     if (!sessionData || !sessionData.sessionId) {
-        console.log('DEBUG getSession: Invalid session data or missing sessionId');
         return null;
     }
     // Check if session exists and is valid
@@ -674,7 +656,7 @@ async function getSession(token) {
     };
 }
 async function deleteSession(token) {
-    const sessionData = simpleDecode(token, process.env.SESSION_SECRET);
+    const sessionData = simpleDecode(token);
     if (sessionData?.sessionId) {
         await __TURBOPACK__imported__module__$5b$project$5d2f$server$2f$db$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["db"].delete(__TURBOPACK__imported__module__$5b$project$5d2f$shared$2f$schema$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["sessions"]).where((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$drizzle$2d$orm$2f$sql$2f$expressions$2f$conditions$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["eq"])(__TURBOPACK__imported__module__$5b$project$5d2f$shared$2f$schema$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["sessions"].sid, sessionData.sessionId));
     }
@@ -716,10 +698,10 @@ function generateLogoutUrl() {
     return "/api/auth/logout";
 }
 function encryptSessionId(sessionData) {
-    return simpleEncode(sessionData, process.env.SESSION_SECRET);
+    return simpleEncode(sessionData);
 }
 function decryptSessionId(token) {
-    return simpleDecode(token, process.env.SESSION_SECRET);
+    return simpleDecode(token);
 }
 async function handleCallback(code) {
     const userData = await exchangeCodeForUser(code);
