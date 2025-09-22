@@ -452,8 +452,8 @@ class MeetingProcessingService {
             await this.forceCleanupMeetingChunks(meetingId);
             // GDPR: Final consent check before email delivery
             const consentCheck3 = await __TURBOPACK__imported__module__$5b$project$5d2f$server$2f$storage$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["storage"].getMeeting(meetingId);
-            if (consentCheck3?.status === 'cancelled' || !consentCheck3?.allAttendeesConsented) {
-                console.log(`❌ GDPR: Email delivery halted - consent withdrawn`);
+            if (consentCheck3?.status === 'cancelled') {
+                console.log(`❌ GDPR: Email delivery halted - meeting cancelled`);
                 return;
             }
             // Send email summary to attendees (refetch meeting with speakers)
@@ -501,11 +501,11 @@ class MeetingProcessingService {
                     try {
                         // GDPR: Check consent before processing each chunk for immediate halt
                         const consentCheck = await __TURBOPACK__imported__module__$5b$project$5d2f$server$2f$storage$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["storage"].getMeeting(meetingId);
-                        if (consentCheck?.status === 'cancelled' || !consentCheck?.allAttendeesConsented) {
-                            console.log(`❌ GDPR: Transcription halted at chunk ${chunkFile.chunkIndex} - consent withdrawn`);
+                        if (consentCheck?.status === 'cancelled') {
+                            console.log(`❌ GDPR: Transcription halted at chunk ${chunkFile.chunkIndex} - meeting cancelled`);
                             // Force cleanup of remaining chunks when halted
                             await this.forceCleanupMeetingChunks(meetingId);
-                            throw new Error('Processing halted due to consent withdrawal');
+                            throw new Error('Processing halted due to meeting cancellation');
                         }
                         console.log(`🎙️ Processing chunk ${chunkFile.chunkIndex} (${processedChunks + 1}/${chunkFiles.length})...`);
                         // Read chunk into memory temporarily
