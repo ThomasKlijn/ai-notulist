@@ -21,7 +21,8 @@ export class EmailService {
     attendees: EmailAttendee[],
     transcription: string,
     summary: MeetingSummary,
-    language: string = 'nl'
+    language: string = 'nl',
+    meeting?: any // Meeting object with consent info
   ): Promise<boolean> {
     try {
       console.log(`📧 EmailService.sendMeetingSummary called with:`);
@@ -39,8 +40,8 @@ export class EmailService {
 
       console.log(`📧 Email subject: ${subject}`);
 
-      const htmlContent = this.generateEmailHTML(summary, transcription, isEnglish);
-      const textContent = this.generateEmailText(summary, transcription, isEnglish);
+      const htmlContent = this.generateEmailHTML(summary, transcription, isEnglish, meeting);
+      const textContent = this.generateEmailText(summary, transcription, isEnglish, meeting);
       
       console.log(`📧 Email content generated, HTML length: ${htmlContent.length}, text length: ${textContent.length}`);
 
@@ -69,7 +70,7 @@ export class EmailService {
   }
 
   // Generate HTML email content
-  private generateEmailHTML(summary: MeetingSummary, transcription: string, isEnglish: boolean): string {
+  private generateEmailHTML(summary: MeetingSummary, transcription: string, isEnglish: boolean, meeting?: any): string {
     const labels = isEnglish ? {
       title: 'Meeting Summary',
       generalSummary: 'Summary',
@@ -82,7 +83,9 @@ export class EmailService {
       fullTranscript: 'Full Transcript',
       task: 'Task',
       assignee: 'Assignee',
-      dueDate: 'Due Date'
+      dueDate: 'Due Date',
+      consentTitle: 'Privacy Consent Confirmed',
+      consentText: 'Your consent for recording and AI processing was given on'
     } : {
       title: 'Meeting Samenvatting',
       generalSummary: 'Samenvatting',
@@ -151,6 +154,16 @@ export class EmailService {
         </ul>
     ` : ''}
 
+    ${meeting?.organizerConsentTimestamp ? `
+    <div style="background-color: #f0fdf4; padding: 16px; border-radius: 6px; margin: 20px 0; border-left: 4px solid #10b981;">
+        <h3 style="margin-top: 0; color: #065f46;">✅ ${labels.consentTitle}</h3>
+        <p style="margin: 0; color: #065f46;">
+            ${labels.consentText} ${new Date(meeting.organizerConsentTimestamp).toLocaleString(isEnglish ? 'en-US' : 'nl-NL')}. 
+            ${isEnglish ? 'This recording has been processed according to our privacy policy.' : 'Deze opname is verwerkt conform ons privacybeleid.'}
+        </p>
+    </div>
+    ` : ''}
+
     <div class="transcript">
         <h2>${labels.fullTranscript}</h2>
         <p>${transcription}</p>
@@ -160,7 +173,7 @@ export class EmailService {
   }
 
   // Generate plain text email content
-  private generateEmailText(summary: MeetingSummary, transcription: string, isEnglish: boolean): string {
+  private generateEmailText(summary: MeetingSummary, transcription: string, isEnglish: boolean, meeting?: any): string {
     const labels = isEnglish ? {
       title: 'MEETING SUMMARY',
       generalSummary: 'SUMMARY',
@@ -186,7 +199,9 @@ export class EmailService {
       fullTranscript: 'VOLLEDIGE TRANSCRIPTIE',
       task: 'Taak',
       assignee: 'Toegewezen aan',
-      dueDate: 'Deadline'
+      dueDate: 'Deadline',
+      consentTitle: 'Privacy Toestemming Bevestigd',
+      consentText: 'Uw toestemming voor opname en AI-verwerking werd gegeven op'
     };
 
     return `
@@ -210,7 +225,11 @@ ${summary.actionItems.map(item =>
 ).join('\n')}
 
 ${summary.nextSteps ? `${labels.nextSteps}:\n${summary.nextSteps.map(step => `• ${step}`).join('\n')}\n` : ''}
+${meeting?.organizerConsentTimestamp ? `
+✅ ${labels.consentTitle}:
+${labels.consentText} ${new Date(meeting.organizerConsentTimestamp).toLocaleString(isEnglish ? 'en-US' : 'nl-NL')}. ${isEnglish ? 'This recording has been processed according to our privacy policy.' : 'Deze opname is verwerkt conform ons privacybeleid.'}
 
+` : ''}
 ${labels.fullTranscript}:
 ${transcription}
     `.trim();

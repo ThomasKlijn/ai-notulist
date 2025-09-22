@@ -490,7 +490,8 @@ export class MeetingProcessingService {
         meeting.attendees,
         transcription,
         enhancedSummary,
-        meeting.language || 'nl'
+        meeting.language || 'nl',
+        meeting // Pass full meeting object with consent info
       );
 
       if (success) {
