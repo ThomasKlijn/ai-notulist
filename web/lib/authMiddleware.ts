@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { cookies } from 'next/headers';
-import { getUserFromSession } from './auth';
+import { getUserFromSession } from './simple-auth';
 
 export async function getAuthenticatedUser(req: NextRequest) {
   try {
