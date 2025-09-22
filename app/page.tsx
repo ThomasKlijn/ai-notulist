@@ -19,3 +19,7 @@ export default async function Home() {
   // If authenticated, redirect to the actual app
   redirect('/dashboard');
 }
+
+// Force no caching for this page
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
