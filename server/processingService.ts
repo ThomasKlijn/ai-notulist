@@ -67,9 +67,9 @@ export class MeetingProcessingService {
         throw new Error(`Meeting ${meetingId} not found`);
       }
 
-      // GDPR: Check consent before starting processing
-      if (!meeting.organizerConsentGiven || !meeting.allAttendeesConsented || meeting.status === 'cancelled') {
-        console.log(`❌ GDPR: Cannot process meeting ${meetingId} - missing consent or cancelled status`);
+      // GDPR: Check consent before starting processing (organizer consent given on behalf of all)
+      if (!meeting.organizerConsentGiven || meeting.status === 'cancelled') {
+        console.log(`❌ GDPR: Cannot process meeting ${meetingId} - missing organizer consent or cancelled status`);
         await storage.updateMeeting(meetingId, { 
           status: 'failed',
           summary: { error: 'Processing stopped due to missing consent or withdrawal' } as any
@@ -82,8 +82,8 @@ export class MeetingProcessingService {
 
       // GDPR: Re-check consent before expensive transcription
       const consentCheck1 = await storage.getMeeting(meetingId);
-      if (consentCheck1?.status === 'cancelled' || !consentCheck1?.allAttendeesConsented) {
-        console.log(`❌ GDPR: Processing halted during transcription phase - consent withdrawn`);
+      if (consentCheck1?.status === 'cancelled') {
+        console.log(`❌ GDPR: Processing halted during transcription phase - meeting cancelled`);
         return;
       }
 
@@ -112,8 +112,8 @@ export class MeetingProcessingService {
       
       // GDPR: Re-check consent before AI summary generation
       const consentCheck2 = await storage.getMeeting(meetingId);
-      if (consentCheck2?.status === 'cancelled' || !consentCheck2?.allAttendeesConsented) {
-        console.log(`❌ GDPR: Processing halted during AI summary phase - consent withdrawn`);
+      if (consentCheck2?.status === 'cancelled') {
+        console.log(`❌ GDPR: Processing halted during AI summary phase - meeting cancelled`);
         return;
       }
 

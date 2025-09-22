@@ -12,13 +12,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     // Require authentication and meeting ownership
     const { meeting } = await requireMeetingOwnership(req, id);
     
-    // GDPR: Require full consent before processing
-    if (!meeting.organizerConsentGiven || !meeting.allAttendeesConsented) {
+    // GDPR: Require organizer consent (given on behalf of all attendees in app)
+    if (!meeting.organizerConsentGiven) {
       return NextResponse.json({ 
-        error: 'Meeting processing is not permitted - missing required consent',
+        error: 'Meeting processing is not permitted - missing organizer consent',
         consent_status: {
-          organizer_consent: meeting.organizerConsentGiven,
-          all_attendees_consent: meeting.allAttendeesConsented
+          organizer_consent: meeting.organizerConsentGiven
         }
       }, { status: 403 });
     }

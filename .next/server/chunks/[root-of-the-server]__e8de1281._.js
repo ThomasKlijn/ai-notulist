@@ -390,9 +390,9 @@ class MeetingProcessingService {
             if (!meeting) {
                 throw new Error(`Meeting ${meetingId} not found`);
             }
-            // GDPR: Check consent before starting processing
-            if (!meeting.organizerConsentGiven || !meeting.allAttendeesConsented || meeting.status === 'cancelled') {
-                console.log(`❌ GDPR: Cannot process meeting ${meetingId} - missing consent or cancelled status`);
+            // GDPR: Check consent before starting processing (organizer consent given on behalf of all)
+            if (!meeting.organizerConsentGiven || meeting.status === 'cancelled') {
+                console.log(`❌ GDPR: Cannot process meeting ${meetingId} - missing organizer consent or cancelled status`);
                 await __TURBOPACK__imported__module__$5b$project$5d2f$server$2f$storage$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["storage"].updateMeeting(meetingId, {
                     status: 'failed',
                     summary: {
@@ -407,8 +407,8 @@ class MeetingProcessingService {
             });
             // GDPR: Re-check consent before expensive transcription
             const consentCheck1 = await __TURBOPACK__imported__module__$5b$project$5d2f$server$2f$storage$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["storage"].getMeeting(meetingId);
-            if (consentCheck1?.status === 'cancelled' || !consentCheck1?.allAttendeesConsented) {
-                console.log(`❌ GDPR: Processing halted during transcription phase - consent withdrawn`);
+            if (consentCheck1?.status === 'cancelled') {
+                console.log(`❌ GDPR: Processing halted during transcription phase - meeting cancelled`);
                 return;
             }
             // MEMORY-OPTIMIZED: Transcribe chunks sequentially WITH SPEAKER DIARIZATION
@@ -434,8 +434,8 @@ class MeetingProcessingService {
             }
             // GDPR: Re-check consent before AI summary generation
             const consentCheck2 = await __TURBOPACK__imported__module__$5b$project$5d2f$server$2f$storage$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["storage"].getMeeting(meetingId);
-            if (consentCheck2?.status === 'cancelled' || !consentCheck2?.allAttendeesConsented) {
-                console.log(`❌ GDPR: Processing halted during AI summary phase - consent withdrawn`);
+            if (consentCheck2?.status === 'cancelled') {
+                console.log(`❌ GDPR: Processing halted during AI summary phase - meeting cancelled`);
                 return;
             }
             // Generate summary
