@@ -1,4 +1,5 @@
-import { pgTable, varchar, text, timestamp, integer, jsonb, serial } from 'drizzle-orm/pg-core';
+import { pgTable, varchar, text, timestamp, integer, jsonb, serial, boolean, index } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
 import { createInsertSchema } from 'drizzle-zod';
 import { z } from 'zod';
 
@@ -12,6 +13,14 @@ export const meetings = pgTable('meetings', {
   finishedAt: timestamp('finished_at'),
   transcription: text('transcription'),
   summary: jsonb('summary'), // Will store structured summary with key points, decisions, actions
+  speakerData: jsonb('speaker_data'), // Raw speaker analysis from ElevenLabs
+  retentionDays: integer('retention_days').default(30).notNull(), // Auto-cleanup after X days
+  autoCleanupEnabled: boolean('auto_cleanup_enabled').default(true).notNull(),
+  lastCleanupAt: timestamp('last_cleanup_at'),
+  userId: varchar('user_id').notNull(), // Link meetings to users
+  organizerConsentGiven: boolean('organizer_consent_given').notNull().default(false),
+  organizerConsentTimestamp: timestamp('organizer_consent_timestamp'),
+  allAttendeesConsented: boolean('all_attendees_consented').default(false).notNull(),
 });
 
 // Attendees table
@@ -21,6 +30,13 @@ export const attendees = pgTable('attendees', {
   name: varchar('name', { length: 255 }),
   email: varchar('email', { length: 255 }).notNull(),
   role: varchar('role', { length: 100 }),
+  // GDPR Consent tracking per attendee
+  consentGiven: boolean('consent_given').default(false).notNull(),
+  consentTimestamp: timestamp('consent_timestamp'),
+  consentPolicyVersion: varchar('consent_policy_version', { length: 20 }).default('v1.0'),
+  consentWithdrawn: boolean('consent_withdrawn').default(false).notNull(),
+  withdrawalTimestamp: timestamp('withdrawal_timestamp'),
+  consentToken: varchar('consent_token', { length: 64 }), // Unique token for consent links
 });
 
 // Audio chunks table - tracks audio file segments
@@ -34,12 +50,24 @@ export const audioChunks = pgTable('audio_chunks', {
   uploadedAt: timestamp('uploaded_at').defaultNow().notNull(),
 });
 
+// Speakers table - tracks individual speakers in meetings
+export const speakers = pgTable('speakers', {
+  id: serial('id').primaryKey(),
+  meetingId: varchar('meeting_id').notNull().references(() => meetings.id, { onDelete: 'cascade' }),
+  speakerId: varchar('speaker_id', { length: 50 }).notNull(), // ElevenLabs speaker identifier
+  speakerName: varchar('speaker_name', { length: 255 }), // Optional human-readable name
+  duration: integer('duration').notNull(), // Speaking time in seconds
+  percentage: integer('percentage').notNull(), // Percentage of total meeting time
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
 // Relations
 import { relations } from 'drizzle-orm';
 
 export const meetingsRelations = relations(meetings, ({ many }) => ({
   attendees: many(attendees),
   audioChunks: many(audioChunks),
+  speakers: many(speakers),
 }));
 
 export const attendeesRelations = relations(attendees, ({ one }) => ({
@@ -56,22 +84,86 @@ export const audioChunksRelations = relations(audioChunks, ({ one }) => ({
   }),
 }));
 
+export const speakersRelations = relations(speakers, ({ one }) => ({
+  meeting: one(meetings, {
+    fields: [speakers.meetingId],
+    references: [meetings.id],
+  }),
+}));
+
+// Session storage table (required for Replit Auth)
+export const sessions = pgTable(
+  "sessions",
+  {
+    sid: varchar("sid").primaryKey(),
+    sess: jsonb("sess").notNull(),
+    expire: timestamp("expire").notNull(),
+  },
+  (table) => ({
+    expireIdx: index("IDX_session_expire").on(table.expire),
+  }),
+);
+
+// User storage table (required for Replit Auth)
+export const users = pgTable("users", {
+  id: varchar("id").primaryKey(),
+  email: varchar("email").unique(),
+  firstName: varchar("first_name"),
+  lastName: varchar("last_name"),
+  profileImageUrl: varchar("profile_image_url"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// User relations  
+export const usersRelations = relations(users, ({ many }) => ({
+  meetings: many(meetings),
+}));
+
+// Update meetings relation to include user
+export const meetingsRelationsExtended = relations(meetings, ({ many, one }) => ({
+  attendees: many(attendees),
+  audioChunks: many(audioChunks),
+  speakers: many(speakers),
+  user: one(users, {
+    fields: [meetings.userId],
+    references: [users.id],
+  }),
+}));
+
 // Zod schemas for validation
 export const insertMeetingSchema = createInsertSchema(meetings).omit({
   createdAt: true,
   finishedAt: true,
   transcription: true,
   summary: true,
+  speakerData: true,
+  lastCleanupAt: true,
+  userId: true,
+  organizerConsentTimestamp: true,
+  allAttendeesConsented: true,
 });
 
 export const insertAttendeeSchema = createInsertSchema(attendees).omit({
   id: true,
   meetingId: true,
+  consentGiven: true,
+  consentTimestamp: true,
+  consentPolicyVersion: true,
+  consentWithdrawn: true,
+  withdrawalTimestamp: true,
+  consentToken: true,
 });
 
 export const insertAudioChunkSchema = createInsertSchema(audioChunks).omit({
   id: true,
   uploadedAt: true,
+});
+
+export const insertSpeakerSchema = createInsertSchema(speakers).omit({
+  id: true,
+  meetingId: true,
+  createdAt: true,
 });
 
 // Types
@@ -81,9 +173,40 @@ export type Attendee = typeof attendees.$inferSelect;
 export type InsertAttendee = z.infer<typeof insertAttendeeSchema>;
 export type AudioChunk = typeof audioChunks.$inferSelect;
 export type InsertAudioChunk = z.infer<typeof insertAudioChunkSchema>;
+export type Speaker = typeof speakers.$inferSelect;
+export type InsertSpeaker = z.infer<typeof insertSpeakerSchema>;
 
 // Extended types for API responses
 export type MeetingWithAttendees = Meeting & {
   attendees: Attendee[];
   audioChunks?: AudioChunk[];
+  speakers?: Speaker[];
 };
+
+// Speaker analysis data from ElevenLabs
+export interface SpeakerAnalysis {
+  id: string;
+  duration: number;
+  percentage: number;
+}
+
+// Enhanced meeting summary with speaker information
+export interface MeetingSummaryWithSpeakers {
+  title: string;
+  generalSummary: string;
+  keyPoints: string[];
+  decisions: string[];
+  actionItems: Array<{
+    task: string;
+    assignee?: string;
+    dueDate?: string;
+  }>;
+  participants: string[];
+  speakers?: SpeakerAnalysis[];
+  duration: string;
+  nextSteps?: string[];
+}
+
+// User types
+export type User = typeof users.$inferSelect;
+export type UpsertUser = typeof users.$inferInsert;
