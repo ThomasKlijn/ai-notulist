@@ -1,18 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { storage } from '../../../../../server/storage';
+import { requireMeetingOwnership } from '../../../../../lib/ownershipMiddleware';
 
 export const runtime = 'nodejs'; // nodig voor FormData parsing
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const meeting = await storage.getMeeting(id);
-  if (!meeting) {
-    return NextResponse.json({ error: 'meeting niet gevonden' }, { status: 404 });
-  }
+  try {
+    const { id } = await params;
+    
+    // Require authentication and meeting ownership
+    await requireMeetingOwnership(req, id);
 
-  const form = await req.formData();
-  const file = form.get('chunk') as File | null;
-  const chunkIndex = form.get('chunkIndex') as string | null;
+    const form = await req.formData();
+    const file = form.get('chunk') as File | null;
+    const chunkIndex = form.get('chunkIndex') as string | null;
   
   if (!file) {
     return NextResponse.json({ error: 'geen audio chunk' }, { status: 400 });
@@ -22,7 +23,6 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: 'chunkIndex is verplicht' }, { status: 400 });
   }
 
-  try {
     // Read the audio data
     const buf = Buffer.from(await file.arrayBuffer());
     
@@ -52,6 +52,15 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       chunkIndex: parseInt(chunkIndex) 
     });
   } catch (error: any) {
+    if (error.name === 'NotFound') {
+      return NextResponse.json({ error: 'Meeting niet gevonden' }, { status: 404 });
+    }
+    if (error.name === 'Forbidden') {
+      return NextResponse.json({ error: 'Geen toegang tot deze meeting' }, { status: 403 });
+    }
+    if (error.message === 'Authentication required') {
+      return NextResponse.json({ error: 'Authenticatie vereist' }, { status: 401 });
+    }
     console.error('Error saving audio chunk:', error);
     return NextResponse.json({ error: 'Fout bij opslaan audio chunk' }, { status: 500 });
   }

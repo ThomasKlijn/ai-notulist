@@ -1,10 +1,10 @@
 import { db } from "./db";
-import { meetings, attendees, audioChunks, speakers, type Meeting, type Attendee, type AudioChunk, type Speaker, type InsertMeeting, type InsertAttendee, type InsertAudioChunk, type InsertSpeaker, type MeetingWithAttendees } from "../shared/schema";
+import { meetings, attendees, audioChunks, speakers, users, type Meeting, type Attendee, type AudioChunk, type Speaker, type User, type InsertMeeting, type InsertAttendee, type InsertAudioChunk, type InsertSpeaker, type UpsertUser, type MeetingWithAttendees } from "../shared/schema";
 import { eq, and, lt } from "drizzle-orm";
 
 export interface IStorage {
-  // Meeting operations
-  createMeeting(meeting: InsertMeeting, attendeesList: InsertAttendee[]): Promise<Meeting>;
+  // Meeting operations  
+  createMeeting(meeting: InsertMeeting, attendeesList: InsertAttendee[], userId: string): Promise<Meeting>;
   getMeeting(id: string): Promise<Meeting | undefined>;
   getMeetingWithAttendees(id: string): Promise<MeetingWithAttendees | undefined>;
   updateMeeting(id: string, updates: Partial<Meeting>): Promise<void>;
@@ -24,16 +24,20 @@ export interface IStorage {
   getMeetingsForCleanup(retentionDays?: number): Promise<Meeting[]>;
   cleanupMeeting(meetingId: string): Promise<void>;
   updateLastCleanup(meetingId: string): Promise<void>;
+  
+  // User operations (required for Replit Auth)
+  getUser(id: string): Promise<User | undefined>;
+  upsertUser(user: UpsertUser): Promise<User>;
 }
 
 export class DatabaseStorage implements IStorage {
-  async createMeeting(meeting: InsertMeeting, attendeesList: InsertAttendee[]): Promise<Meeting> {
+  async createMeeting(meeting: InsertMeeting, attendeesList: InsertAttendee[], userId: string): Promise<Meeting> {
     // Create meeting and attendees in a transaction
     const result = await db.transaction(async (tx) => {
-      // Insert meeting
+      // Insert meeting with userId
       const [newMeeting] = await tx
         .insert(meetings)
-        .values(meeting)
+        .values({ ...meeting, userId })
         .returning();
       
       // Insert attendees
@@ -175,6 +179,27 @@ export class DatabaseStorage implements IStorage {
       .update(meetings)
       .set({ lastCleanupAt: new Date() })
       .where(eq(meetings.id, meetingId));
+  }
+  
+  // User operations (required for Replit Auth)
+  async getUser(id: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
+  }
+
+  async upsertUser(userData: UpsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(userData)
+      .onConflictDoUpdate({
+        target: users.id,
+        set: {
+          ...userData,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+    return user;
   }
 }
 

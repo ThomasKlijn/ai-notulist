@@ -1,16 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { storage } from '../../../../../server/storage';
+import { requireMeetingOwnership } from '../../../../../lib/ownershipMiddleware';
 
 // Use Node.js runtime for file system operations in processingService
 export const runtime = 'nodejs';
 
-export async function POST(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const meeting = await storage.getMeeting(id);
-    if (!meeting) {
-      return NextResponse.json({ error: 'meeting niet gevonden' }, { status: 404 });
-    }
+    
+    // Require authentication and meeting ownership
+    await requireMeetingOwnership(req, id);
 
     // Mark meeting as finished and set processing status
     await storage.finishMeeting(id);
@@ -25,6 +25,15 @@ export async function POST(_: NextRequest, { params }: { params: Promise<{ id: s
     
     return NextResponse.json({ ok: true });
   } catch (error: any) {
+    if (error.name === 'NotFound') {
+      return NextResponse.json({ error: 'Meeting niet gevonden' }, { status: 404 });
+    }
+    if (error.name === 'Forbidden') {
+      return NextResponse.json({ error: 'Geen toegang tot deze meeting' }, { status: 403 });
+    }
+    if (error.message === 'Authentication required') {
+      return NextResponse.json({ error: 'Authenticatie vereist' }, { status: 401 });
+    }
     console.error('Error finishing meeting:', error);
     return NextResponse.json({ error: 'Fout bij afronden meeting' }, { status: 500 });
   }
