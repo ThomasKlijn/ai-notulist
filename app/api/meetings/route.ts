@@ -58,15 +58,16 @@ export async function POST(req: NextRequest) {
       try {
         const { EmailService } = await import('../../../lib/emailService');
         const meetingWithAttendees = await storage.getMeetingWithAttendees(meeting.id);
+        const fullUser = await storage.getUser(user.id); // Get full user details
         
         if (meetingWithAttendees?.attendees) {
           for (const attendee of meetingWithAttendees.attendees) {
             if (attendee.consentToken) {
               await EmailService.sendConsentRequest({
-                attendeeName: attendee.name,
+                attendeeName: attendee.name || '',
                 attendeeEmail: attendee.email,
                 meetingTitle: meeting.title,
-                organizerName: `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Meeting organizer',
+                organizerName: fullUser ? `${fullUser.firstName || ''} ${fullUser.lastName || ''}`.trim() || 'Meeting organizer' : 'Meeting organizer',
                 consentToken: attendee.consentToken,
                 meetingDate: new Date(meeting.createdAt).toLocaleDateString()
               });
