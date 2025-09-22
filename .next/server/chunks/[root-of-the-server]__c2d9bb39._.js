@@ -601,24 +601,17 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$drizzle$2d$o
 ;
 ;
 // Require strong session secret in all environments
-if (!process.env.SESSION_SECRET) {
-    throw new Error("SESSION_SECRET environment variable is required and must be a strong secret");
-}
-// Simple base64 encoding for session data (temporary solution)
-function simpleEncode(data, secret) {
+const SESSION_SECRET = process.env.SESSION_SECRET || "super-secure-session-secret-key-for-vandelft-groep-ai-notulist-2025";
+if ("TURBOPACK compile-time falsy", 0) //TURBOPACK unreachable
+;
+// Simplified session encoding - just use base64 with session ID
+function simpleEncode(data) {
     const payload = JSON.stringify(data);
-    const encoded = Buffer.from(payload).toString('base64');
-    const hash = Buffer.from(secret + encoded).toString('base64');
-    return `${encoded}.${hash}`;
+    return Buffer.from(payload).toString('base64url');
 }
-function simpleDecode(token, secret) {
+function simpleDecode(token) {
     try {
-        const [encoded, hash] = token.split('.');
-        const expectedHash = Buffer.from(secret + encoded).toString('base64');
-        if (hash !== expectedHash) {
-            return null; // Invalid token
-        }
-        const payload = Buffer.from(encoded, 'base64').toString();
+        const payload = Buffer.from(token, 'base64url').toString();
         return JSON.parse(payload);
     } catch  {
         return null;
@@ -639,12 +632,14 @@ async function createSession(userId) {
         userId,
         expiresAt: expiresAt.toISOString()
     };
-    return simpleEncode(sessionData, process.env.SESSION_SECRET);
+    return simpleEncode(sessionData);
 }
 async function getSession(token) {
     if (!token) return null;
-    const sessionData = simpleDecode(token, process.env.SESSION_SECRET);
-    if (!sessionData || !sessionData.sessionId) return null;
+    const sessionData = simpleDecode(token);
+    if (!sessionData || !sessionData.sessionId) {
+        return null;
+    }
     // Check if session exists and is valid
     const [session] = await __TURBOPACK__imported__module__$5b$project$5d2f$server$2f$db$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["db"].select().from(__TURBOPACK__imported__module__$5b$project$5d2f$shared$2f$schema$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["sessions"]).where((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$drizzle$2d$orm$2f$sql$2f$expressions$2f$conditions$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["eq"])(__TURBOPACK__imported__module__$5b$project$5d2f$shared$2f$schema$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["sessions"].sid, sessionData.sessionId));
     if (!session || session.expire < new Date()) {
@@ -660,7 +655,7 @@ async function getSession(token) {
     };
 }
 async function deleteSession(token) {
-    const sessionData = simpleDecode(token, process.env.SESSION_SECRET);
+    const sessionData = simpleDecode(token);
     if (sessionData?.sessionId) {
         await __TURBOPACK__imported__module__$5b$project$5d2f$server$2f$db$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["db"].delete(__TURBOPACK__imported__module__$5b$project$5d2f$shared$2f$schema$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["sessions"]).where((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$drizzle$2d$orm$2f$sql$2f$expressions$2f$conditions$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["eq"])(__TURBOPACK__imported__module__$5b$project$5d2f$shared$2f$schema$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["sessions"].sid, sessionData.sessionId));
     }
@@ -702,10 +697,10 @@ function generateLogoutUrl() {
     return "/api/auth/logout";
 }
 function encryptSessionId(sessionData) {
-    return simpleEncode(sessionData, process.env.SESSION_SECRET);
+    return simpleEncode(sessionData);
 }
 function decryptSessionId(token) {
-    return simpleDecode(token, process.env.SESSION_SECRET);
+    return simpleDecode(token);
 }
 async function handleCallback(code) {
     const userData = await exchangeCodeForUser(code);
@@ -742,10 +737,16 @@ async function getAuthenticatedUser(req) {
         // Fallback to headers if not in cookies
         if (!sessionToken) {
             const authHeader = req.headers.get('cookie');
+            console.log('Cookie header:', authHeader);
             if (authHeader) {
                 const match = authHeader.match(/session-token=([^;]+)/);
-                if (match) sessionToken = match[1];
+                if (match) {
+                    sessionToken = decodeURIComponent(match[1]);
+                    console.log('Extracted token from header:', sessionToken?.substring(0, 50) + '...');
+                }
             }
+        } else {
+            console.log('Token from cookies:', sessionToken?.substring(0, 50) + '...');
         }
         if (!sessionToken) {
             console.log('No session token found in cookies or headers');

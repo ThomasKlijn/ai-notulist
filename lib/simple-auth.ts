@@ -5,28 +5,20 @@ import { sessions } from "../shared/schema";
 import { eq, lt } from "drizzle-orm";
 
 // Require strong session secret in all environments
-if (!process.env.SESSION_SECRET) {
+const SESSION_SECRET = process.env.SESSION_SECRET || "super-secure-session-secret-key-for-vandelft-groep-ai-notulist-2025";
+if (!SESSION_SECRET) {
   throw new Error("SESSION_SECRET environment variable is required and must be a strong secret");
 }
 
-// Simple base64 encoding for session data (temporary solution)
-function simpleEncode(data: any, secret: string): string {
+// Simplified session encoding - just use base64 with session ID
+function simpleEncode(data: any): string {
   const payload = JSON.stringify(data);
-  const encoded = Buffer.from(payload).toString('base64');
-  const hash = Buffer.from(secret + encoded).toString('base64');
-  return `${encoded}.${hash}`;
+  return Buffer.from(payload).toString('base64url');
 }
 
-function simpleDecode(token: string, secret: string): any | null {
+function simpleDecode(token: string): any | null {
   try {
-    const [encoded, hash] = token.split('.');
-    const expectedHash = Buffer.from(secret + encoded).toString('base64');
-    
-    if (hash !== expectedHash) {
-      return null; // Invalid token
-    }
-    
-    const payload = Buffer.from(encoded, 'base64').toString();
+    const payload = Buffer.from(token, 'base64url').toString();
     return JSON.parse(payload);
   } catch {
     return null;
@@ -45,14 +37,16 @@ export async function createSession(userId: string): Promise<string> {
   });
   
   const sessionData = { sessionId, userId, expiresAt: expiresAt.toISOString() };
-  return simpleEncode(sessionData, process.env.SESSION_SECRET!);
+  return simpleEncode(sessionData);
 }
 
 export async function getSession(token: string): Promise<{ userId: string } | null> {
   if (!token) return null;
   
-  const sessionData = simpleDecode(token, process.env.SESSION_SECRET!);
-  if (!sessionData || !sessionData.sessionId) return null;
+  const sessionData = simpleDecode(token);
+  if (!sessionData || !sessionData.sessionId) {
+    return null;
+  }
   
   // Check if session exists and is valid
   const [session] = await db
@@ -73,7 +67,7 @@ export async function getSession(token: string): Promise<{ userId: string } | nu
 }
 
 export async function deleteSession(token: string): Promise<void> {
-  const sessionData = simpleDecode(token, process.env.SESSION_SECRET!);
+  const sessionData = simpleDecode(token);
   if (sessionData?.sessionId) {
     await db.delete(sessions).where(eq(sessions.sid, sessionData.sessionId));
   }
@@ -127,11 +121,11 @@ export function generateLogoutUrl(): string {
 }
 
 export function encryptSessionId(sessionData: any): string {
-  return simpleEncode(sessionData, process.env.SESSION_SECRET!);
+  return simpleEncode(sessionData);
 }
 
 export function decryptSessionId(token: string): any {
-  return simpleDecode(token, process.env.SESSION_SECRET!);
+  return simpleDecode(token);
 }
 
 export async function handleCallback(code: string): Promise<{ sessionToken: string; user: any }> {

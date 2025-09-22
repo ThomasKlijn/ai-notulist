@@ -10,10 +10,16 @@ export async function getAuthenticatedUser(req: NextRequest) {
     // Fallback to headers if not in cookies
     if (!sessionToken) {
       const authHeader = req.headers.get('cookie');
+      console.log('Cookie header:', authHeader);
       if (authHeader) {
         const match = authHeader.match(/session-token=([^;]+)/);
-        if (match) sessionToken = match[1];
+        if (match) {
+          sessionToken = decodeURIComponent(match[1]);
+          console.log('Extracted token from header:', sessionToken?.substring(0, 50) + '...');
+        }
       }
+    } else {
+      console.log('Token from cookies:', sessionToken?.substring(0, 50) + '...');
     }
     
     if (!sessionToken) {

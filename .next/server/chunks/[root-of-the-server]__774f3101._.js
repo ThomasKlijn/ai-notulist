@@ -1,5 +1,5 @@
 module.exports = [
-"[project]/.next-internal/server/app/api/auth/simple-login/route/actions.js [app-rsc] (server actions loader, ecmascript)", ((__turbopack_context__, module, exports) => {
+"[project]/.next-internal/server/app/api/debug-auth/route/actions.js [app-rsc] (server actions loader, ecmascript)", ((__turbopack_context__, module, exports) => {
 
 }),
 "[externals]/next/dist/compiled/next-server/app-route-turbo.runtime.dev.js [external] (next/dist/compiled/next-server/app-route-turbo.runtime.dev.js, cjs)", ((__turbopack_context__, module, exports) => {
@@ -604,16 +604,31 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$drizzle$2d$o
 const SESSION_SECRET = process.env.SESSION_SECRET || "super-secure-session-secret-key-for-vandelft-groep-ai-notulist-2025";
 if ("TURBOPACK compile-time falsy", 0) //TURBOPACK unreachable
 ;
-// Simplified session encoding - just use base64 with session ID
-function simpleEncode(data) {
+// Simple base64 encoding for session data (temporary solution)
+function simpleEncode(data, secret) {
     const payload = JSON.stringify(data);
-    return Buffer.from(payload).toString('base64url');
+    const encoded = Buffer.from(payload).toString('base64');
+    const hash = Buffer.from(secret + encoded).toString('base64');
+    return `${encoded}.${hash}`;
 }
-function simpleDecode(token) {
+function simpleDecode(token, secret) {
     try {
-        const payload = Buffer.from(token, 'base64url').toString();
-        return JSON.parse(payload);
-    } catch  {
+        console.log('DEBUG simpleDecode: token parts:', token.split('.').length);
+        console.log('DEBUG simpleDecode: secret length:', secret.length);
+        const [encoded, hash] = token.split('.');
+        const expectedHash = Buffer.from(secret + encoded).toString('base64');
+        console.log('DEBUG simpleDecode: provided hash:', hash?.substring(0, 20) + '...');
+        console.log('DEBUG simpleDecode: expected hash:', expectedHash?.substring(0, 20) + '...');
+        if (hash !== expectedHash) {
+            console.log('DEBUG simpleDecode: Hash mismatch!');
+            return null; // Invalid token
+        }
+        const payload = Buffer.from(encoded, 'base64').toString();
+        const result = JSON.parse(payload);
+        console.log('DEBUG simpleDecode: Successful decode:', result);
+        return result;
+    } catch (error) {
+        console.log('DEBUG simpleDecode: Error:', error);
         return null;
     }
 }
@@ -632,12 +647,16 @@ async function createSession(userId) {
         userId,
         expiresAt: expiresAt.toISOString()
     };
-    return simpleEncode(sessionData);
+    return simpleEncode(sessionData, SESSION_SECRET);
 }
 async function getSession(token) {
     if (!token) return null;
-    const sessionData = simpleDecode(token);
+    console.log('DEBUG getSession: token length:', token.length);
+    console.log('DEBUG getSession: SESSION_SECRET defined:', !!SESSION_SECRET);
+    const sessionData = simpleDecode(token, SESSION_SECRET);
+    console.log('DEBUG getSession: decoded sessionData:', sessionData);
     if (!sessionData || !sessionData.sessionId) {
+        console.log('DEBUG getSession: Invalid session data or missing sessionId');
         return null;
     }
     // Check if session exists and is valid
@@ -655,7 +674,7 @@ async function getSession(token) {
     };
 }
 async function deleteSession(token) {
-    const sessionData = simpleDecode(token);
+    const sessionData = simpleDecode(token, process.env.SESSION_SECRET);
     if (sessionData?.sessionId) {
         await __TURBOPACK__imported__module__$5b$project$5d2f$server$2f$db$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["db"].delete(__TURBOPACK__imported__module__$5b$project$5d2f$shared$2f$schema$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["sessions"]).where((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$drizzle$2d$orm$2f$sql$2f$expressions$2f$conditions$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["eq"])(__TURBOPACK__imported__module__$5b$project$5d2f$shared$2f$schema$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["sessions"].sid, sessionData.sessionId));
     }
@@ -697,10 +716,10 @@ function generateLogoutUrl() {
     return "/api/auth/logout";
 }
 function encryptSessionId(sessionData) {
-    return simpleEncode(sessionData);
+    return simpleEncode(sessionData, process.env.SESSION_SECRET);
 }
 function decryptSessionId(token) {
-    return simpleDecode(token);
+    return simpleDecode(token, process.env.SESSION_SECRET);
 }
 async function handleCallback(code) {
     const userData = await exchangeCodeForUser(code);
@@ -719,70 +738,59 @@ async function handleCallback(code) {
     };
 }
 }),
-"[project]/app/api/auth/simple-login/route.ts [app-route] (ecmascript)", ((__turbopack_context__) => {
+"[project]/app/api/debug-auth/route.ts [app-route] (ecmascript)", ((__turbopack_context__) => {
 "use strict";
 
 __turbopack_context__.s([
-    "POST",
-    ()=>POST
+    "GET",
+    ()=>GET
 ]);
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/server.js [app-route] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$simple$2d$auth$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/lib/simple-auth.ts [app-route] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$server$2f$storage$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/server/storage.ts [app-route] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$headers$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/headers.js [app-route] (ecmascript)");
 ;
 ;
-;
-;
-const VALID_CREDENTIALS = {
-    username: 'VanDelftGroep',
-    password: 'JWVD12'
-};
-async function POST(req) {
+async function GET(req) {
     try {
-        const { username, password } = await req.json();
-        // Check credentials
-        if (username !== VALID_CREDENTIALS.username || password !== VALID_CREDENTIALS.password) {
+        // Debug cookie parsing
+        const cookieHeader = req.headers.get('cookie');
+        console.log('DEBUG: Cookie header:', cookieHeader);
+        let sessionToken = req.cookies.get('session-token')?.value;
+        console.log('DEBUG: Token from req.cookies:', sessionToken?.substring(0, 50) + '...');
+        if (!sessionToken && cookieHeader) {
+            const match = cookieHeader.match(/session-token=([^;]+)/);
+            if (match) {
+                sessionToken = decodeURIComponent(match[1]);
+                console.log('DEBUG: Token from header match:', sessionToken?.substring(0, 50) + '...');
+            }
+        }
+        if (!sessionToken) {
             return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
-                error: 'Invalid username or password'
-            }, {
-                status: 401
+                error: 'No session token found',
+                cookieHeader,
+                cookies: Object.fromEntries(req.cookies.getAll().map((c)=>[
+                        c.name,
+                        c.value?.substring(0, 50) + '...'
+                    ]))
             });
         }
-        // Create or get user
-        const userId = 'vandelftgroep-user';
-        const user = await __TURBOPACK__imported__module__$5b$project$5d2f$server$2f$storage$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["storage"].upsertUser({
-            id: userId,
-            email: 'info@vandelftgroep.nl',
-            firstName: 'Van Delft',
-            lastName: 'Groep'
-        });
-        // Create session
-        const sessionToken = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$simple$2d$auth$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["createSession"])(userId);
-        // Set cookie
-        const cookieStore = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$headers$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["cookies"])();
-        cookieStore.set('session-token', sessionToken, {
-            httpOnly: true,
-            secure: ("TURBOPACK compile-time value", "development") === 'production',
-            sameSite: 'lax',
-            maxAge: 24 * 60 * 60,
-            path: '/'
-        });
+        console.log('DEBUG: Validating session...');
+        const sessionData = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$simple$2d$auth$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["getSession"])(sessionToken);
+        console.log('DEBUG: Session validation result:', sessionData);
         return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
             success: true,
-            user
+            sessionValid: !!sessionData,
+            sessionData,
+            tokenLength: sessionToken.length
         });
     } catch (error) {
-        console.error('Login error details:', error);
+        console.error('DEBUG: Error:', error);
         return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
-            error: 'Login failed',
-            details: error instanceof Error ? error.message : 'Unknown error'
-        }, {
-            status: 500
+            error: 'Debug failed',
+            message: error instanceof Error ? error.message : 'Unknown error'
         });
     }
 }
 }),
 ];
 
-//# sourceMappingURL=%5Broot-of-the-server%5D__6f4926dd._.js.map
+//# sourceMappingURL=%5Broot-of-the-server%5D__774f3101._.js.map
