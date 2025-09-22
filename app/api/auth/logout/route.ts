@@ -1,39 +1,53 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { generateLogoutUrl, decryptSessionId, deleteSession } from '../../../../lib/auth';
+import { deleteSession } from '../../../../lib/simple-auth';
 import { cookies } from 'next/headers';
 
 export async function GET(req: NextRequest) {
   try {
     const cookieStore = await cookies();
-    const sessionCookie = cookieStore.get('auth-session');
-    
-    // Delete database session if present
-    if (sessionCookie) {
-      try {
-        const sessionId = await decryptSessionId(sessionCookie.value);
-        await deleteSession(sessionId);
-      } catch (error) {
-        console.error('Error deleting session from database:', error);
-        // Continue with logout even if session deletion fails
-      }
+    const sessionToken = cookieStore.get('session-token')?.value;
+
+    if (sessionToken) {
+      await deleteSession(sessionToken);
     }
-    
-    // Clear session cookie
-    cookieStore.set('auth-session', '', {
+
+    // Clear cookie
+    cookieStore.set('session-token', '', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       maxAge: 0,
       path: '/',
     });
-    
-    const hostname = req.headers.get('host') || 'localhost:5000';
-    const logoutUrl = await generateLogoutUrl(hostname);
-    
-    return NextResponse.redirect(logoutUrl);
+
+    return NextResponse.redirect(new URL('/login', req.url));
   } catch (error) {
-    console.error('Error handling logout:', error);
-    // Fallback to just clearing cookie and redirecting home
-    return NextResponse.redirect(new URL('/', req.url));
+    console.error('Logout error:', error);
+    return NextResponse.redirect(new URL('/login', req.url));
+  }
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    const cookieStore = await cookies();
+    const sessionToken = cookieStore.get('session-token')?.value;
+
+    if (sessionToken) {
+      await deleteSession(sessionToken);
+    }
+
+    // Clear cookie
+    cookieStore.set('session-token', '', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 0,
+      path: '/',
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Logout error:', error);
+    return NextResponse.json({ error: 'Logout failed' }, { status: 500 });
   }
 }

@@ -1,10 +1,49 @@
 'use client';
 
 import DownloadAppButton from '../components/DownloadAppButton';
+import AuthWrapper from '../components/AuthWrapper';
 
 export default function Home() {
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      window.location.href = '/login';
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+
   return (
-    <main style={{ textAlign: 'center', padding: '40px 20px' }}>
+    <AuthWrapper>
+      <main style={{ textAlign: 'center', padding: '40px 20px' }}>
+        <div style={{ 
+          position: 'absolute', 
+          top: '20px', 
+          right: '20px' 
+        }}>
+          <button
+            onClick={handleLogout}
+            style={{
+              backgroundColor: '#ef4444',
+              color: 'white',
+              padding: '8px 16px',
+              border: 'none',
+              borderRadius: '6px',
+              fontSize: '14px',
+              fontWeight: '500',
+              cursor: 'pointer',
+              transition: 'background-color 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#dc2626';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = '#ef4444';
+            }}
+          >
+            Logout
+          </button>
+        </div>
       <div style={{ marginBottom: '48px' }}>
         <h2 style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '16px', color: '#1f2937' }}>
           AI-Powered Meeting Notes
@@ -23,33 +62,6 @@ export default function Home() {
           marginBottom: '48px'
         }}>
           <DownloadAppButton />
-          
-          <a 
-            href="/api/auth/login" 
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-              backgroundColor: '#10b981',
-              color: 'white',
-              padding: '16px 24px',
-              textDecoration: 'none',
-              borderRadius: '12px',
-              fontSize: '16px',
-              fontWeight: '600',
-              minHeight: '56px',
-              transition: 'all 0.2s ease'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#059669';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = '#10b981';
-            }}
-          >
-            <span>🔐</span>
-            Login met Replit
-          </a>
           
           <a 
             href="/meetings/new" 
@@ -148,6 +160,7 @@ export default function Home() {
           </a> voor meer informatie over gegevensbescherming en uw rechten.
         </p>
       </footer>
-    </main>
+      </main>
+    </AuthWrapper>
   );
 }

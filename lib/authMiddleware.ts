@@ -1,23 +1,23 @@
 import { NextRequest } from 'next/server';
 import { cookies } from 'next/headers';
-import { getUserFromSession } from './simple-auth';
+import { getSession } from './simple-auth';
 
 export async function getAuthenticatedUser(req: NextRequest) {
   try {
     const cookieStore = await cookies();
-    const sessionCookie = cookieStore.get('auth-session');
+    const sessionCookie = cookieStore.get('session-token');
     
     if (!sessionCookie) {
       return null;
     }
     
-    const sessionData = await getUserFromSession(sessionCookie.value);
+    const sessionData = await getSession(sessionCookie.value);
     
     if (!sessionData) {
       return null;
     }
     
-    return sessionData.user;
+    return { id: sessionData.userId };
   } catch (error) {
     console.error('Error getting authenticated user:', error);
     return null;
