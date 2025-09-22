@@ -25,6 +25,33 @@ export default function Home() {
           <DownloadAppButton />
           
           <a 
+            href="/api/auth/login" 
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              backgroundColor: '#10b981',
+              color: 'white',
+              padding: '16px 24px',
+              textDecoration: 'none',
+              borderRadius: '12px',
+              fontSize: '16px',
+              fontWeight: '600',
+              minHeight: '56px',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#059669';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = '#10b981';
+            }}
+          >
+            <span>🔐</span>
+            Login met Replit
+          </a>
+          
+          <a 
             href="/meetings/new" 
             style={{
               display: 'inline-flex',
