@@ -733,21 +733,31 @@ __turbopack_context__.s([
     "requireAuth",
     ()=>requireAuth
 ]);
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$headers$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/headers.js [app-route] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$simple$2d$auth$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/lib/simple-auth.ts [app-route] (ecmascript)");
-;
 ;
 async function getAuthenticatedUser(req) {
     try {
-        const cookieStore = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$headers$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["cookies"])();
-        const sessionCookie = cookieStore.get('session-token');
-        if (!sessionCookie) {
+        // Try to get from cookies first
+        let sessionToken = req.cookies.get('session-token')?.value;
+        // Fallback to headers if not in cookies
+        if (!sessionToken) {
+            const authHeader = req.headers.get('cookie');
+            if (authHeader) {
+                const match = authHeader.match(/session-token=([^;]+)/);
+                if (match) sessionToken = match[1];
+            }
+        }
+        if (!sessionToken) {
+            console.log('No session token found in cookies or headers');
             return null;
         }
-        const sessionData = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$simple$2d$auth$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["getSession"])(sessionCookie.value);
+        console.log('Found session token, validating...');
+        const sessionData = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$simple$2d$auth$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["getSession"])(sessionToken);
         if (!sessionData) {
+            console.log('Session validation failed');
             return null;
         }
+        console.log('Session valid for user:', sessionData.userId);
         return {
             id: sessionData.userId
         };

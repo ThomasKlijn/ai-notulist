@@ -4,19 +4,32 @@ import { getSession } from './simple-auth';
 
 export async function getAuthenticatedUser(req: NextRequest) {
   try {
-    const cookieStore = await cookies();
-    const sessionCookie = cookieStore.get('session-token');
+    // Try to get from cookies first
+    let sessionToken = req.cookies.get('session-token')?.value;
     
-    if (!sessionCookie) {
+    // Fallback to headers if not in cookies
+    if (!sessionToken) {
+      const authHeader = req.headers.get('cookie');
+      if (authHeader) {
+        const match = authHeader.match(/session-token=([^;]+)/);
+        if (match) sessionToken = match[1];
+      }
+    }
+    
+    if (!sessionToken) {
+      console.log('No session token found in cookies or headers');
       return null;
     }
     
-    const sessionData = await getSession(sessionCookie.value);
+    console.log('Found session token, validating...');
+    const sessionData = await getSession(sessionToken);
     
     if (!sessionData) {
+      console.log('Session validation failed');
       return null;
     }
     
+    console.log('Session valid for user:', sessionData.userId);
     return { id: sessionData.userId };
   } catch (error) {
     console.error('Error getting authenticated user:', error);
