@@ -4,10 +4,15 @@ import { insertMeetingSchema, insertAttendeeSchema } from '../../../shared/schem
 import { requireAuth } from '../../../lib/authMiddleware';
 import { z } from 'zod';
 
+// Simple schema that matches frontend exactly
 const createMeetingSchema = z.object({
   title: z.string().min(1),
   language: z.string().optional(),
-  attendees: z.array(insertAttendeeSchema).min(1),
+  attendees: z.array(z.object({
+    email: z.string().email(),
+    name: z.string().optional(),
+    role: z.string().optional()
+  })).min(1),
   consentGiven: z.boolean().refine(val => val === true, {
     message: "Privacy consent is required to create a meeting"
   })
