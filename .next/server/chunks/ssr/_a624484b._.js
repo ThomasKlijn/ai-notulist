@@ -155,7 +155,11 @@ function AttendeesInput({ onChange }) {
 
 __turbopack_context__.s([
     "default",
-    ()=>NewMeetingPage
+    ()=>NewMeetingPage,
+    "dynamic",
+    ()=>dynamic,
+    "revalidate",
+    ()=>revalidate
 ]);
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/server/route-modules/app-page/vendored/ssr/react-jsx-dev-runtime.js [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/navigation.js [app-ssr] (ecmascript)");
@@ -166,6 +170,8 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$AttendeesInput
 ;
 ;
 ;
+const dynamic = 'force-dynamic';
+const revalidate = 0;
 function NewMeetingPage() {
     const r = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useRouter"])();
     const [title, setTitle] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])('');
@@ -209,7 +215,7 @@ function NewMeetingPage() {
                 children: "Nieuwe meeting"
             }, void 0, false, {
                 fileName: "[project]/app/meetings/new/page.tsx",
-                lineNumber: 38,
+                lineNumber: 42,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -229,7 +235,7 @@ function NewMeetingPage() {
                                 children: "Titel"
                             }, void 0, false, {
                                 fileName: "[project]/app/meetings/new/page.tsx",
-                                lineNumber: 41,
+                                lineNumber: 45,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -242,13 +248,13 @@ function NewMeetingPage() {
                                 }
                             }, void 0, false, {
                                 fileName: "[project]/app/meetings/new/page.tsx",
-                                lineNumber: 42,
+                                lineNumber: 46,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/meetings/new/page.tsx",
-                        lineNumber: 40,
+                        lineNumber: 44,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -261,7 +267,7 @@ function NewMeetingPage() {
                                 children: "Taal"
                             }, void 0, false, {
                                 fileName: "[project]/app/meetings/new/page.tsx",
-                                lineNumber: 45,
+                                lineNumber: 49,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
@@ -273,7 +279,7 @@ function NewMeetingPage() {
                                         children: "Nederlands"
                                     }, void 0, false, {
                                         fileName: "[project]/app/meetings/new/page.tsx",
-                                        lineNumber: 47,
+                                        lineNumber: 51,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -281,26 +287,26 @@ function NewMeetingPage() {
                                         children: "Engels"
                                     }, void 0, false, {
                                         fileName: "[project]/app/meetings/new/page.tsx",
-                                        lineNumber: 48,
+                                        lineNumber: 52,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/meetings/new/page.tsx",
-                                lineNumber: 46,
+                                lineNumber: 50,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/meetings/new/page.tsx",
-                        lineNumber: 44,
+                        lineNumber: 48,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$AttendeesInput$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"], {
                         onChange: setAttendees
                     }, void 0, false, {
                         fileName: "[project]/app/meetings/new/page.tsx",
-                        lineNumber: 51,
+                        lineNumber: 55,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -320,7 +326,7 @@ function NewMeetingPage() {
                                 children: "Privacy & Toestemming"
                             }, void 0, false, {
                                 fileName: "[project]/app/meetings/new/page.tsx",
-                                lineNumber: 53,
+                                lineNumber: 57,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -333,7 +339,7 @@ function NewMeetingPage() {
                                 children: "Door deze meeting aan te maken, ga je akkoord met het opnemen en verwerken van audio voor:"
                             }, void 0, false, {
                                 fileName: "[project]/app/meetings/new/page.tsx",
-                                lineNumber: 54,
+                                lineNumber: 58,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("ul", {
@@ -348,27 +354,27 @@ function NewMeetingPage() {
                                         children: "Automatische transcriptie van gesproken tekst"
                                     }, void 0, false, {
                                         fileName: "[project]/app/meetings/new/page.tsx",
-                                        lineNumber: 58,
+                                        lineNumber: 62,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
                                         children: "AI-gegenereerde samenvatting van de meeting"
                                     }, void 0, false, {
                                         fileName: "[project]/app/meetings/new/page.tsx",
-                                        lineNumber: 59,
+                                        lineNumber: 63,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
                                         children: "Versturen van meeting notities naar attendees via e-mail"
                                     }, void 0, false, {
                                         fileName: "[project]/app/meetings/new/page.tsx",
-                                        lineNumber: 60,
+                                        lineNumber: 64,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/meetings/new/page.tsx",
-                                lineNumber: 57,
+                                lineNumber: 61,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -389,14 +395,14 @@ function NewMeetingPage() {
                                         children: "privacyverklaring"
                                     }, void 0, false, {
                                         fileName: "[project]/app/meetings/new/page.tsx",
-                                        lineNumber: 64,
+                                        lineNumber: 68,
                                         columnNumber: 13
                                     }, this),
                                     "."
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/meetings/new/page.tsx",
-                                lineNumber: 62,
+                                lineNumber: 66,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
@@ -417,7 +423,7 @@ function NewMeetingPage() {
                                         "data-testid": "checkbox-consent"
                                     }, void 0, false, {
                                         fileName: "[project]/app/meetings/new/page.tsx",
-                                        lineNumber: 67,
+                                        lineNumber: 71,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -428,19 +434,19 @@ function NewMeetingPage() {
                                         children: "Ik geef toestemming voor het opnemen en verwerken van audio-opnames voor bovenstaande doeleinden"
                                     }, void 0, false, {
                                         fileName: "[project]/app/meetings/new/page.tsx",
-                                        lineNumber: 74,
+                                        lineNumber: 78,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/meetings/new/page.tsx",
-                                lineNumber: 66,
+                                lineNumber: 70,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/meetings/new/page.tsx",
-                        lineNumber: 52,
+                        lineNumber: 56,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -456,24 +462,24 @@ function NewMeetingPage() {
                             children: busy ? 'Aanmaken…' : 'Start opname'
                         }, void 0, false, {
                             fileName: "[project]/app/meetings/new/page.tsx",
-                            lineNumber: 80,
+                            lineNumber: 84,
                             columnNumber: 11
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/app/meetings/new/page.tsx",
-                        lineNumber: 79,
+                        lineNumber: 83,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/app/meetings/new/page.tsx",
-                lineNumber: 39,
+                lineNumber: 43,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/app/meetings/new/page.tsx",
-        lineNumber: 37,
+        lineNumber: 41,
         columnNumber: 5
     }, this);
 }

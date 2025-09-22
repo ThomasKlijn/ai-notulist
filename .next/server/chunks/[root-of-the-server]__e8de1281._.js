@@ -721,7 +721,8 @@ class MeetingProcessingService {
                 ...summary,
                 speakers: meeting.speakers || []
             };
-            const success = await emailService.sendMeetingSummary(meeting.title, meeting.attendees, transcription, enhancedSummary, meeting.language || 'nl');
+            const success = await emailService.sendMeetingSummary(meeting.title, meeting.attendees, transcription, enhancedSummary, meeting.language || 'nl', meeting // Pass full meeting object with consent info
+            );
             if (success) {
                 console.log(`✅ Email summary sent successfully for meeting ${meeting.id}`);
             } else {

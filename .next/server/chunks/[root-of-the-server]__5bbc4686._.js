@@ -29,7 +29,8 @@ const mailService = new __TURBOPACK__imported__module__$5b$project$5d2f$node_mod
 mailService.setApiKey(process.env.SENDGRID_API_KEY);
 class EmailService {
     // Send meeting summary to all attendees
-    async sendMeetingSummary(meetingTitle, attendees, transcription, summary, language = 'nl') {
+    async sendMeetingSummary(meetingTitle, attendees, transcription, summary, language = 'nl', meeting// Meeting object with consent info
+    ) {
         try {
             console.log(`📧 EmailService.sendMeetingSummary called with:`);
             console.log(`  - Title: ${meetingTitle}`);
@@ -40,8 +41,8 @@ class EmailService {
             // Create email content
             const subject = isEnglish ? `Meeting Summary: ${meetingTitle}` : `Meeting Samenvatting: ${meetingTitle}`;
             console.log(`📧 Email subject: ${subject}`);
-            const htmlContent = this.generateEmailHTML(summary, transcription, isEnglish);
-            const textContent = this.generateEmailText(summary, transcription, isEnglish);
+            const htmlContent = this.generateEmailHTML(summary, transcription, isEnglish, meeting);
+            const textContent = this.generateEmailText(summary, transcription, isEnglish, meeting);
             console.log(`📧 Email content generated, HTML length: ${htmlContent.length}, text length: ${textContent.length}`);
             // Send to each attendee
             console.log(`📧 Preparing to send emails to ${attendees.length} attendees...`);
@@ -66,7 +67,7 @@ class EmailService {
         }
     }
     // Generate HTML email content
-    generateEmailHTML(summary, transcription, isEnglish) {
+    generateEmailHTML(summary, transcription, isEnglish, meeting) {
         const labels = isEnglish ? {
             title: 'Meeting Summary',
             generalSummary: 'Summary',
@@ -79,7 +80,9 @@ class EmailService {
             fullTranscript: 'Full Transcript',
             task: 'Task',
             assignee: 'Assignee',
-            dueDate: 'Due Date'
+            dueDate: 'Due Date',
+            consentTitle: 'Privacy Consent Confirmed',
+            consentText: 'Your consent for recording and AI processing was given on'
         } : {
             title: 'Meeting Samenvatting',
             generalSummary: 'Samenvatting',
@@ -147,6 +150,16 @@ class EmailService {
         </ul>
     ` : ''}
 
+    ${meeting?.organizerConsentTimestamp ? `
+    <div style="background-color: #f0fdf4; padding: 16px; border-radius: 6px; margin: 20px 0; border-left: 4px solid #10b981;">
+        <h3 style="margin-top: 0; color: #065f46;">✅ ${labels.consentTitle}</h3>
+        <p style="margin: 0; color: #065f46;">
+            ${labels.consentText} ${new Date(meeting.organizerConsentTimestamp).toLocaleString(isEnglish ? 'en-US' : 'nl-NL')}. 
+            ${isEnglish ? 'This recording has been processed according to our privacy policy.' : 'Deze opname is verwerkt conform ons privacybeleid.'}
+        </p>
+    </div>
+    ` : ''}
+
     <div class="transcript">
         <h2>${labels.fullTranscript}</h2>
         <p>${transcription}</p>
@@ -155,7 +168,7 @@ class EmailService {
 </html>`;
     }
     // Generate plain text email content
-    generateEmailText(summary, transcription, isEnglish) {
+    generateEmailText(summary, transcription, isEnglish, meeting) {
         const labels = isEnglish ? {
             title: 'MEETING SUMMARY',
             generalSummary: 'SUMMARY',
@@ -181,7 +194,9 @@ class EmailService {
             fullTranscript: 'VOLLEDIGE TRANSCRIPTIE',
             task: 'Taak',
             assignee: 'Toegewezen aan',
-            dueDate: 'Deadline'
+            dueDate: 'Deadline',
+            consentTitle: 'Privacy Toestemming Bevestigd',
+            consentText: 'Uw toestemming voor opname en AI-verwerking werd gegeven op'
         };
         return `
 ${labels.title}: ${summary.title}
@@ -202,7 +217,11 @@ ${labels.actionItems}:
 ${summary.actionItems.map((item)=>`• ${labels.task}: ${item.task}${item.assignee ? `\n  ${labels.assignee}: ${item.assignee}` : ''}${item.dueDate ? `\n  ${labels.dueDate}: ${item.dueDate}` : ''}`).join('\n')}
 
 ${summary.nextSteps ? `${labels.nextSteps}:\n${summary.nextSteps.map((step)=>`• ${step}`).join('\n')}\n` : ''}
+${meeting?.organizerConsentTimestamp ? `
+✅ ${labels.consentTitle}:
+${labels.consentText} ${new Date(meeting.organizerConsentTimestamp).toLocaleString(isEnglish ? 'en-US' : 'nl-NL')}. ${isEnglish ? 'This recording has been processed according to our privacy policy.' : 'Deze opname is verwerkt conform ons privacybeleid.'}
 
+` : ''}
 ${labels.fullTranscript}:
 ${transcription}
     `.trim();
