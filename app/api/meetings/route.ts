@@ -53,35 +53,12 @@ export async function POST(req: NextRequest) {
       user.id
     );
     
-    // Send consent emails to all attendees (background process)
-    setTimeout(async () => {
-      try {
-        const { EmailService } = await import('../../../lib/emailService');
-        const meetingWithAttendees = await storage.getMeetingWithAttendees(meeting.id);
-        const fullUser = await storage.getUser(user.id); // Get full user details
-        
-        if (meetingWithAttendees?.attendees) {
-          for (const attendee of meetingWithAttendees.attendees) {
-            if (attendee.consentToken) {
-              await EmailService.sendConsentRequest({
-                attendeeName: attendee.name || '',
-                attendeeEmail: attendee.email,
-                meetingTitle: meeting.title,
-                organizerName: fullUser ? `${fullUser.firstName || ''} ${fullUser.lastName || ''}`.trim() || 'Meeting organizer' : 'Meeting organizer',
-                consentToken: attendee.consentToken,
-                meetingDate: new Date(meeting.createdAt).toLocaleDateString()
-              });
-            }
-          }
-        }
-      } catch (error) {
-        console.error('Failed to send consent emails:', error);
-      }
-    }, 100); // Small delay to avoid blocking response
+    // No consent emails sent - consent already given in app
+    // Meeting summary with consent confirmation will be sent after recording
     
     return NextResponse.json({ 
       id: meeting.id,
-      message: 'Meeting created. Consent emails sent to attendees.'
+      message: 'Meeting created successfully. Recording can begin.'
     });
   } catch (e: any) {
     if (e.message === 'Authentication required') {

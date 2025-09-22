@@ -18,7 +18,105 @@ interface ConsentEmailData {
   meetingDate: string;
 }
 
+interface MeetingSummaryData {
+  attendeeEmail: string;
+  attendeeName?: string;
+  meetingTitle: string;
+  organizerName?: string;
+  meetingDate: string;
+  summary: string;
+  transcript?: string;
+  consentGiven: boolean;
+  consentTimestamp: string;
+}
+
 export class EmailService {
+  static async sendMeetingSummary(data: MeetingSummaryData): Promise<boolean> {
+    if (!process.env.SENDGRID_API_KEY) {
+      console.warn('Email sending disabled - no SendGrid API key');
+      return false;
+    }
+    
+    const msg = {
+      to: data.attendeeEmail,
+      from: VERIFIED_SENDER,
+      subject: `Meeting Summary: "${data.meetingTitle}"`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2 style="color: #1f2937;">Meeting Summary</h2>
+          
+          <p>Hello ${data.attendeeName || 'there'},</p>
+          
+          <p>Here is the summary of your recent meeting with AI-generated notes and transcription.</p>
+          
+          <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="margin-top: 0; color: #1f2937;">Meeting Details</h3>
+            <p><strong>Title:</strong> ${data.meetingTitle}</p>
+            <p><strong>Organizer:</strong> ${data.organizerName || 'Meeting organizer'}</p>
+            <p><strong>Date:</strong> ${data.meetingDate}</p>
+          </div>
+          
+          <div style="background-color: #f0f9ff; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="margin-top: 0; color: #1f2937;">AI Summary</h3>
+            <div style="white-space: pre-line;">${data.summary}</div>
+          </div>
+          
+          ${data.transcript ? `
+          <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="margin-top: 0; color: #1f2937;">Full Transcript</h3>
+            <div style="white-space: pre-line; font-family: monospace; font-size: 14px;">${data.transcript}</div>
+          </div>
+          ` : ''}
+          
+          <div style="background-color: #f0fdf4; padding: 16px; border-radius: 6px; margin: 20px 0; border-left: 4px solid #10b981;">
+            <h4 style="margin-top: 0; color: #065f46;">✅ Privacy Consent Confirmed</h4>
+            <p style="margin: 0; color: #065f46;">
+              Your consent for recording and AI processing was given on ${data.consentTimestamp}. 
+              This recording has been processed according to our privacy policy.
+            </p>
+          </div>
+          
+          <p style="color: #6b7280; font-size: 14px;">
+            If you have any questions about this meeting or our data handling, please contact the meeting organizer.
+          </p>
+          
+          <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;" />
+          <p style="color: #9ca3af; font-size: 12px; text-align: center;">
+            AI Notulist - Powered by ElevenLabs & OpenAI
+          </p>
+        </div>
+      `,
+      text: `
+Meeting Summary: ${data.meetingTitle}
+
+Hello ${data.attendeeName || 'there'},
+
+Meeting Details:
+- Title: ${data.meetingTitle}
+- Organizer: ${data.organizerName || 'Meeting organizer'}
+- Date: ${data.meetingDate}
+
+AI Summary:
+${data.summary}
+
+${data.transcript ? `Full Transcript:\n${data.transcript}\n\n` : ''}
+
+Privacy Consent Confirmed: Your consent for recording and AI processing was given on ${data.consentTimestamp}.
+
+AI Notulist - Powered by ElevenLabs & OpenAI
+      `
+    };
+
+    try {
+      await sgMail.send(msg);
+      console.log(`Meeting summary sent to ${data.attendeeEmail}`);
+      return true;
+    } catch (error) {
+      console.error('Error sending meeting summary:', error);
+      return false;
+    }
+  }
+
   static async sendConsentRequest(data: ConsentEmailData): Promise<boolean> {
     if (!process.env.SENDGRID_API_KEY) {
       console.warn('Email sending disabled - no SendGrid API key');

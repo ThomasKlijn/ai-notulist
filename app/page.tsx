@@ -1,9 +1,8 @@
 import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
-import { getSession } from '../lib/simple-auth';
 
 export default async function Home() {
-  // Check authentication server-side
+  // Simple check: redirect to login if no session token
   const cookieStore = await cookies();
   const sessionToken = cookieStore.get('session-token')?.value;
   
@@ -11,12 +10,7 @@ export default async function Home() {
     redirect('/login');
   }
   
-  const session = await getSession(sessionToken);
-  if (!session) {
-    redirect('/login');
-  }
-  
-  // If authenticated, redirect to the actual app
+  // If session token exists, go to dashboard
   redirect('/dashboard');
 }
 
