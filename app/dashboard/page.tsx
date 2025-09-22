@@ -2,10 +2,6 @@
 
 import DownloadAppButton from '../../components/DownloadAppButton';
 
-// Force no caching for better UX
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-
 export default function Dashboard() {
   const handleLogout = async () => {
     try {

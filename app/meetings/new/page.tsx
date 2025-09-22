@@ -1,10 +1,6 @@
 'use client';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-
-// Force no caching for instant loading
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
 import AttendeesInput from '../../../components/AttendeesInput';
 
 type Attendee = { name?: string; email: string };
