@@ -824,14 +824,15 @@ async function POST(req) {
             try {
                 const { EmailService } = await __turbopack_context__.A("[project]/lib/emailService.ts [app-route] (ecmascript, async loader)");
                 const meetingWithAttendees = await __TURBOPACK__imported__module__$5b$project$5d2f$server$2f$storage$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["storage"].getMeetingWithAttendees(meeting.id);
+                const fullUser = await __TURBOPACK__imported__module__$5b$project$5d2f$server$2f$storage$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["storage"].getUser(user.id); // Get full user details
                 if (meetingWithAttendees?.attendees) {
                     for (const attendee of meetingWithAttendees.attendees){
                         if (attendee.consentToken) {
                             await EmailService.sendConsentRequest({
-                                attendeeName: attendee.name,
+                                attendeeName: attendee.name || '',
                                 attendeeEmail: attendee.email,
                                 meetingTitle: meeting.title,
-                                organizerName: `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Meeting organizer',
+                                organizerName: fullUser ? `${fullUser.firstName || ''} ${fullUser.lastName || ''}`.trim() || 'Meeting organizer' : 'Meeting organizer',
                                 consentToken: attendee.consentToken,
                                 meetingDate: new Date(meeting.createdAt).toLocaleDateString()
                             });
