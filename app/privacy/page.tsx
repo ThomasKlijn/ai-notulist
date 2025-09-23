@@ -113,8 +113,8 @@ export default function PrivacyPage() {
             Voor vragen over deze privacyverklaring of het uitoefenen van uw rechten:
           </p>
           <ul style={{ marginBottom: '16px', paddingLeft: '24px' }}>
-            <li><strong>E-mail:</strong> privacy@ainotulist.com</li>
-            <li><strong>Reactietijd:</strong> Binnen 30 dagen</li>
+            <li><strong>E-mail:</strong> info@klijnaisolutions.nl</li>
+            <li><strong>Reactietijd:</strong> Binnen 48 uur</li>
           </ul>
           <p style={{ marginBottom: '16px' }}>
             U heeft ook het recht om een klacht in te dienen bij de Autoriteit Persoonsgegevens (AP) 

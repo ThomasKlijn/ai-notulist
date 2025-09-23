@@ -907,7 +907,7 @@ function PrivacyPage() {
                                                 lineNumber: 116,
                                                 columnNumber: 17
                                             }, this),
-                                            " privacy@ainotulist.com"
+                                            " info@klijnaisolutions.nl"
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/privacy/page.tsx",
@@ -923,7 +923,7 @@ function PrivacyPage() {
                                                 lineNumber: 117,
                                                 columnNumber: 17
                                             }, this),
-                                            " Binnen 30 dagen"
+                                            " Binnen 48 uur"
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/privacy/page.tsx",
