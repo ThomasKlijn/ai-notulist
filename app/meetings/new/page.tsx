@@ -7,7 +7,6 @@ type Attendee = { name?: string; email: string };
 
 // Force no caching for consent form
 export const dynamic = 'force-dynamic';
-export const revalidate = 0;
 
 export default function NewMeetingPage() {
   const r = useRouter();

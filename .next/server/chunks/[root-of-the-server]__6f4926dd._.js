@@ -744,11 +744,16 @@ async function POST(req) {
         const { username, password } = await req.json();
         // Check credentials
         if (username !== VALID_CREDENTIALS.username || password !== VALID_CREDENTIALS.password) {
-            return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
+            const errorResponse = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
                 error: 'Invalid username or password'
             }, {
                 status: 401
             });
+            // Add aggressive cache prevention headers
+            errorResponse.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate, private, max-age=0');
+            errorResponse.headers.set('Pragma', 'no-cache');
+            errorResponse.headers.set('Expires', '0');
+            return errorResponse;
         }
         // Create or get user
         const userId = 'vandelftgroep-user';
@@ -769,18 +774,28 @@ async function POST(req) {
             maxAge: 24 * 60 * 60,
             path: '/'
         });
-        return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
+        const response = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
             success: true,
             user
         });
+        // Add aggressive cache prevention headers
+        response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate, private, max-age=0');
+        response.headers.set('Pragma', 'no-cache');
+        response.headers.set('Expires', '0');
+        return response;
     } catch (error) {
         console.error('Login error details:', error);
-        return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
+        const errorResponse = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
             error: 'Login failed',
             details: error instanceof Error ? error.message : 'Unknown error'
         }, {
             status: 500
         });
+        // Add aggressive cache prevention headers
+        errorResponse.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate, private, max-age=0');
+        errorResponse.headers.set('Pragma', 'no-cache');
+        errorResponse.headers.set('Expires', '0');
+        return errorResponse;
     }
 }
 }),

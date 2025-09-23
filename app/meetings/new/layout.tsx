@@ -9,7 +9,6 @@ export const metadata: Metadata = {
 
 // Force no caching for new meeting page
 export const dynamic = 'force-dynamic';
-export const revalidate = 0;
 
 export default function NewMeetingLayout({
   children,
