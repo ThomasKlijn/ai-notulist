@@ -105,17 +105,27 @@ export async function generateMeetingSummary(
 Meeting Title: ${meetingTitle}
 Transcription: ${transcription}`
       : `Analyseer deze meeting transcriptie en geef een gestructureerde samenvatting in JSON formaat met de volgende structuur:
-
 {
   "title": "Meeting titel/onderwerp",
-  "generalSummary": "Een uitgebreide samenvatting van 2-3 zinnen over wat er besproken is in de meeting",
+  "generalSummary": "Een neutrale, objectieve samenvatting van 5–7 zinnen over wat er besproken is",
   "keyPoints": ["Lijst van belangrijke discussiepunten"],
   "decisions": ["Beslissingen genomen tijdens de meeting"],
-  "actionItems": [{"task": "Beschrijving", "assignee": "Persoon naam indien genoemd", "dueDate": "Datum indien genoemd"}],
+  "actionItems": [
+    {
+      "task": "Beschrijving van actiepunt",
+      "assignee": "Naam van persoon indien genoemd, anders 'N.t.b.'",
+      "dueDate": "Datum indien genoemd, anders 'Niet gespecificeerd'"
+    }
+  ],
   "participants": ["Namen van personen genoemd in de meeting"],
-  "duration": "Geschatte meeting duur",
+  "duration": "Geschatte meetingduur (of 'Niet gespecificeerd' als onbekend)",
   "nextSteps": ["Volgende stappen of vervolgacties"]
 }
+
+Regels:
+- Als een veld leeg zou blijven, vul het in met 'N.t.b.' of 'Niet gespecificeerd'.
+- Gebruik altijd dezelfde taal als de transcriptie.
+- Geef GEEN uitleg buiten de JSON, alleen de JSON zelf.
 
 Meeting Titel: ${meetingTitle}
 Transcriptie: ${transcription}`;
@@ -127,7 +137,7 @@ Transcriptie: ${transcription}`;
           role: "system",
           content: isEnglish 
             ? "You are an expert meeting assistant. Analyze meeting transcriptions and provide structured, accurate summaries. Always respond with valid JSON."
-            : "Je bent een expert meeting assistent. Analyseer meeting transcripties en geef gestructureerde, nauwkeurige samenvattingen. Antwoord altijd met geldige JSON."
+            : "Je bent een expert meeting assistent. Analyseer meeting transcripties en geef gestructureerde, nauwkeurige samenvattingen.\nBelangrijk: Antwoord ALTIJD uitsluitend met geldige JSON die exact voldoet aan de gevraagde structuur."
         },
         {
           role: "user",
