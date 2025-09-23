@@ -1,10 +1,18 @@
 // AI Notulist Service Worker for PWA functionality
-const CACHE_NAME = 'ai-notulist-v1';
+const CACHE_NAME = 'ai-notulist-v2';  // Bumped version to force update
 const urlsToCache = [
   '/',
-  '/meetings/new',
   '/manifest.json',
-  // Add other important routes and assets
+  // NOTE: Removed /meetings/new and other auth-critical pages to prevent cache issues
+];
+
+// Critical paths that must NEVER be cached (always go to network)
+const NEVER_CACHE_PATHS = [
+  '/login',
+  '/meetings/new',
+  '/consent/',
+  '/api/auth/',
+  '/api/meetings'
 ];
 
 // Install event - cache important resources
@@ -45,6 +53,17 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   // Skip non-GET requests
   if (event.request.method !== 'GET') {
+    return;
+  }
+
+  // CRITICAL: Never cache authentication, consent, or API routes
+  const url = new URL(event.request.url);
+  const isNeverCachePath = NEVER_CACHE_PATHS.some(path => url.pathname.startsWith(path));
+  
+  if (isNeverCachePath) {
+    console.log('[SW] NEVER CACHE - Going directly to network:', event.request.url);
+    // Always go to network for these critical paths
+    event.respondWith(fetch(event.request));
     return;
   }
 

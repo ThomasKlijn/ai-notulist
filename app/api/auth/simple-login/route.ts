@@ -14,7 +14,14 @@ export async function POST(req: NextRequest) {
 
     // Check credentials
     if (username !== VALID_CREDENTIALS.username || password !== VALID_CREDENTIALS.password) {
-      return NextResponse.json({ error: 'Invalid username or password' }, { status: 401 });
+      const errorResponse = NextResponse.json({ error: 'Invalid username or password' }, { status: 401 });
+    
+    // Add aggressive cache prevention headers
+    errorResponse.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate, private, max-age=0');
+    errorResponse.headers.set('Pragma', 'no-cache');
+    errorResponse.headers.set('Expires', '0');
+    
+    return errorResponse;
     }
 
     // Create or get user
@@ -39,12 +46,26 @@ export async function POST(req: NextRequest) {
       path: '/',
     });
 
-    return NextResponse.json({ success: true, user });
+    const response = NextResponse.json({ success: true, user });
+    
+    // Add aggressive cache prevention headers
+    response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate, private, max-age=0');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
+    
+    return response;
   } catch (error) {
     console.error('Login error details:', error);
-    return NextResponse.json({ 
+    const errorResponse = NextResponse.json({ 
       error: 'Login failed', 
       details: error instanceof Error ? error.message : 'Unknown error' 
     }, { status: 500 });
+    
+    // Add aggressive cache prevention headers
+    errorResponse.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate, private, max-age=0');
+    errorResponse.headers.set('Pragma', 'no-cache');
+    errorResponse.headers.set('Expires', '0');
+    
+    return errorResponse;
   }
 }

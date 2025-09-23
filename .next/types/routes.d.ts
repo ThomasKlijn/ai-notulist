@@ -4,7 +4,7 @@
 type AppRoutes = "/" | "/auth/error" | "/consent/[token]" | "/dashboard" | "/login" | "/meetings/[id]" | "/meetings/new" | "/privacy"
 type AppRouteHandlerRoutes = "/api/auth/callback" | "/api/auth/check" | "/api/auth/login" | "/api/auth/logout" | "/api/auth/simple-login" | "/api/auth/user" | "/api/consent/[token]" | "/api/debug-auth" | "/api/meetings" | "/api/meetings/[id]/audio" | "/api/meetings/[id]/finish" | "/api/meetings/[id]/reprocess" | "/api/meetings/[id]/status"
 type PageRoutes = never
-type LayoutRoutes = "/"
+type LayoutRoutes = "/" | "/login" | "/meetings/new"
 type RedirectRoutes = never
 type RewriteRoutes = never
 type Routes = AppRoutes | PageRoutes | LayoutRoutes | RedirectRoutes | RewriteRoutes | AppRouteHandlerRoutes
@@ -39,6 +39,8 @@ export type ParamsOf<Route extends Routes> = ParamMap[Route]
 
 interface LayoutSlotMap {
   "/": never
+  "/login": never
+  "/meetings/new": never
 }
 
 

@@ -28,10 +28,17 @@ export async function POST(req: NextRequest) {
     // Validate request body
     const validation = createMeetingSchema.safeParse(body);
     if (!validation.success) {
-      return NextResponse.json({ 
+      const errorResponse = NextResponse.json({ 
         error: 'Invalid input', 
         details: validation.error.issues 
       }, { status: 400 });
+      
+      // Add aggressive cache prevention headers
+      errorResponse.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate, private, max-age=0');
+      errorResponse.headers.set('Pragma', 'no-cache');
+      errorResponse.headers.set('Expires', '0');
+      
+      return errorResponse;
     }
 
     const { title, attendees, language, consentGiven } = validation.data;
@@ -56,15 +63,36 @@ export async function POST(req: NextRequest) {
     // No consent emails sent - consent already given in app
     // Meeting summary with consent confirmation will be sent after recording
     
-    return NextResponse.json({ 
+    const response = NextResponse.json({ 
       id: meeting.id,
       message: 'Meeting created successfully. Recording can begin.'
     });
+    
+    // Add aggressive cache prevention headers
+    response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate, private, max-age=0');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
+    
+    return response;
   } catch (e: any) {
     if (e.message === 'Authentication required') {
-      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+      const authErrorResponse = NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+      
+      // Add aggressive cache prevention headers
+      authErrorResponse.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate, private, max-age=0');
+      authErrorResponse.headers.set('Pragma', 'no-cache');
+      authErrorResponse.headers.set('Expires', '0');
+      
+      return authErrorResponse;
     }
     console.error('Error creating meeting:', e);
-    return NextResponse.json({ error: e?.message ?? 'onbekende fout' }, { status: 500 });
+    const serverErrorResponse = NextResponse.json({ error: e?.message ?? 'onbekende fout' }, { status: 500 });
+    
+    // Add aggressive cache prevention headers
+    serverErrorResponse.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate, private, max-age=0');
+    serverErrorResponse.headers.set('Pragma', 'no-cache');
+    serverErrorResponse.headers.set('Expires', '0');
+    
+    return serverErrorResponse;
   }
 }

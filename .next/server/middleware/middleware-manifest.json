@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "sorted_middleware": [],
   "middleware": {
     "/": {
       "files": [
@@ -11,7 +11,7 @@
       "page": "/",
       "matchers": [
         {
-          "regexp": "^(?:\\/(_next\\/data\\/[^/]{1,}))?(?:\\/((?!api|_next\\/static|_next\\/image|favicon.ico|sw.js|manifest.json|icons).*))(\\\\.json)?[\\/#\\?]?$",
+          "regexp": "/:nextData(_next/data/[^/]{1,})?/((?!api|_next/static|_next/image|favicon.ico|sw.js|manifest.json|icons).*){(\\\\.json)}?",
           "originalSource": "/((?!api|_next/static|_next/image|favicon.ico|sw.js|manifest.json|icons).*)"
         }
       ],
@@ -26,8 +26,6 @@
       }
     }
   },
-  "sortedMiddleware": [
-    "/"
-  ],
+  "instrumentation": null,
   "functions": {}
 }
