@@ -38,7 +38,7 @@ export interface IStorage {
 export class DatabaseStorage implements IStorage {
   async createMeeting(meeting: InsertMeeting, attendeesList: InsertAttendee[], userId: string): Promise<Meeting> {
     // Create meeting and attendees in a transaction
-    const result = await db.transaction(async (tx) => {
+    const result = await db.transaction(async (tx: any) => {
       // Insert meeting with userId
       const [newMeeting] = await tx
         .insert(meetings)
@@ -224,7 +224,7 @@ export class DatabaseStorage implements IStorage {
   async updateAttendeeConsent(token: string, consentGiven: boolean): Promise<{ meetingId: string } | null> {
     const timestamp = new Date();
     
-    return await db.transaction(async (tx) => {
+    return await db.transaction(async (tx: any) => {
       // Update attendee consent status
       const [result] = await tx
         .update(attendees)
@@ -313,7 +313,7 @@ export class DatabaseStorage implements IStorage {
       .where(eq(attendees.meetingId, meetingId));
     
     const allConsented = attendeesList.length > 0 && 
-      attendeesList.every(attendee => attendee.consentGiven && !attendee.consentWithdrawn);
+      attendeesList.every((attendee: any) => attendee.consentGiven && !attendee.consentWithdrawn);
     
     // Update meeting status
     await db

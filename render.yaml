@@ -8,15 +8,30 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
-      - key: DATABASE_URL
-        sync: false
-      - key: ELEVENLABS_API_KEY
-        sync: false
-      - key: OPENAI_API_KEY
-        sync: false
-      - key: SENDGRID_API_KEY
-        sync: false
-      - key: VERIFIED_SENDER_EMAIL
-        sync: false
       - key: SESSION_SECRET
-        sync: false
+        generateValue: true  # Auto-generate random session secret
+      - key: DATABASE_URL
+        sync: false  # Must be set manually in Render dashboard
+      - key: ELEVENLABS_API_KEY
+        sync: false  # Must be set manually in Render dashboard
+      - key: OPENAI_API_KEY
+        sync: false  # Must be set manually in Render dashboard
+      - key: SENDGRID_API_KEY
+        sync: false  # Must be set manually in Render dashboard
+      - key: VERIFIED_SENDER_EMAIL
+        sync: false  # Must be set manually in Render dashboard
+      - key: AUTH_USERNAME
+        value: VanDelftGroep  # Default auth username
+      - key: AUTH_PASSWORD
+        value: JWVD12  # Default auth password
+
+# IMPORTANT: To fix login failures, you MUST set these environment variables in the Render dashboard:
+# 1. Go to your service dashboard on Render
+# 2. Click "Environment" tab  
+# 3. Add these required variables:
+#    - DATABASE_URL: Your PostgreSQL database connection string
+#    - OPENAI_API_KEY: Your OpenAI API key (for transcription)
+#    - ELEVENLABS_API_KEY: Your ElevenLabs API key (for speech-to-text)
+#    - SENDGRID_API_KEY: Your SendGrid API key (for emails)
+#    - VERIFIED_SENDER_EMAIL: Your verified sender email address
+# 4. Click "Deploy Latest Commit" to restart with new environment variables

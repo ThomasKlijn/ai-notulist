@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createSession } from '../../../../lib/simple-auth';
-import { storage } from '../../../../server/storage';
 import { cookies } from 'next/headers';
 
+// Force Node.js runtime for database operations
+export const runtime = 'nodejs';
+
 const VALID_CREDENTIALS = {
-  username: 'VanDelftGroep',
-  password: 'JWVD12'
+  username: process.env.AUTH_USERNAME || 'VanDelftGroep',
+  password: process.env.AUTH_PASSWORD || 'JWVD12'
 };
 
 export async function POST(req: NextRequest) {
@@ -24,14 +26,30 @@ export async function POST(req: NextRequest) {
     return errorResponse;
     }
 
-    // Create or get user
+    // Create or get user (with fallback if database fails)
     const userId = 'vandelftgroep-user';
-    const user = await storage.upsertUser({
-      id: userId,
-      email: 'info@vandelftgroep.nl',
-      firstName: 'Van Delft',
-      lastName: 'Groep'
-    });
+    let user;
+    try {
+      // Lazy import storage to avoid crashing at startup
+      const { storage } = await import('../../../../server/storage');
+      user = await storage.upsertUser({
+        id: userId,
+        email: 'info@vandelftgroep.nl',
+        firstName: 'Van Delft',
+        lastName: 'Groep'
+      });
+    } catch (error) {
+      console.warn('Database upsert failed, using fallback user:', error);
+      // Fallback user object when database is unavailable
+      user = {
+        id: userId,
+        email: 'info@vandelftgroep.nl',
+        firstName: 'Van Delft',
+        lastName: 'Groep',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+    }
 
     // Create session
     const sessionToken = await createSession(userId);
