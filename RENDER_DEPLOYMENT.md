@@ -21,8 +21,8 @@
 
 2. **Configure Build Settings:**
    ```
-   Build Command: cd web && npm install && npm run build
-   Start Command: cd web && npm start
+   Build Command: npm install && npm run build
+   Start Command: npm start
    ```
 
 3. **Environment Settings:**

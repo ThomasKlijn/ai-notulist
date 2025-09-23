@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: ai-notulist
+    runtime: node
+    buildCommand: npm install && npx next build
+    startCommand: npx next start -p $PORT
+    plan: free
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: ELEVENLABS_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: SENDGRID_API_KEY
+        sync: false
+      - key: VERIFIED_SENDER_EMAIL
+        sync: false
+      - key: SESSION_SECRET
+        sync: false
