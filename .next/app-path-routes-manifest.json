@@ -1,8 +1,8 @@
 {
-  "/_not-found/page": "/_not-found",
-  "/api/auth/check/route": "/api/auth/check",
   "/api/auth/logout/route": "/api/auth/logout",
+  "/api/auth/check/route": "/api/auth/check",
   "/api/consent/[token]/route": "/api/consent/[token]",
+  "/_not-found/page": "/_not-found",
   "/api/debug-auth/route": "/api/debug-auth",
   "/api/meetings/[id]/status/route": "/api/meetings/[id]/status",
   "/api/meetings/route": "/api/meetings",
@@ -14,8 +14,8 @@
   "/consent/[token]/page": "/consent/[token]",
   "/dashboard/page": "/dashboard",
   "/meetings/[id]/page": "/meetings/[id]",
-  "/privacy/page": "/privacy",
   "/page": "/",
+  "/privacy/page": "/privacy",
   "/login/page": "/login",
   "/meetings/new/page": "/meetings/new"
 }

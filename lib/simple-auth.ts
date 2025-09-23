@@ -1,20 +1,77 @@
 // Stateless authentication - no database required
 // Simple JWT-like token system for VanDelft Groep login
+// Uses Web APIs only - compatible with Node.js ≥18 and Edge runtime
 
-// Use a secure default secret (in production, set SESSION_SECRET env var)
+// Session secret with production safety check
 const SESSION_SECRET = process.env.SESSION_SECRET || "super-secure-session-secret-key-for-vandelft-groep-ai-notulist-2025-render-deployment";
 
-// Simple token creation with signature (JWT-like but simplified)
+// Warn in production if default secret is used
+if (process.env.NODE_ENV === 'production' && !process.env.SESSION_SECRET) {
+  console.error('🚨 SECURITY WARNING: Using default SESSION_SECRET in production! Set SESSION_SECRET environment variable.');
+}
+
+// Dual-runtime base64url encoding - works in both Edge and Node.js
+function base64urlEncode(str: string): string {
+  let base64: string;
+  
+  if (typeof btoa !== 'undefined') {
+    // Browser/Edge environment - use btoa
+    const encoder = new TextEncoder();
+    const bytes = encoder.encode(str);
+    let binaryString = '';
+    for (let i = 0; i < bytes.length; i++) {
+      binaryString += String.fromCharCode(bytes[i]);
+    }
+    base64 = btoa(binaryString);
+  } else {
+    // Node.js environment - use Buffer
+    base64 = Buffer.from(str, 'utf8').toString('base64');
+  }
+  
+  // Make URL-safe
+  return base64
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=/g, '');
+}
+
+// Dual-runtime base64url decoding - works in both Edge and Node.js
+function base64urlDecode(str: string): string {
+  // Add padding back
+  let padded = str;
+  while (padded.length % 4) {
+    padded += '=';
+  }
+  
+  // Make base64-safe
+  const base64 = padded.replace(/-/g, '+').replace(/_/g, '/');
+  
+  if (typeof atob !== 'undefined') {
+    // Browser/Edge environment - use atob
+    const binaryString = atob(base64);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    const decoder = new TextDecoder();
+    return decoder.decode(bytes);
+  } else {
+    // Node.js environment - use Buffer
+    return Buffer.from(base64, 'base64').toString('utf8');
+  }
+}
+
+// Simple token creation with signature (JWT-like but simplified) - Edge compatible
 async function createSignedToken(data: any): Promise<string> {
   const payload = JSON.stringify(data);
   const signature = await createSignature(payload);
   const combined = JSON.stringify({ payload, signature });
-  return Buffer.from(combined).toString('base64url');
+  return base64urlEncode(combined);
 }
 
 async function verifySignedToken(token: string): Promise<any | null> {
   try {
-    const combined = Buffer.from(token, 'base64url').toString();
+    const combined = base64urlDecode(token);
     const { payload, signature } = JSON.parse(combined);
     
     // Verify signature
@@ -36,8 +93,12 @@ async function verifySignedToken(token: string): Promise<any | null> {
   }
 }
 
-// Web Crypto API signature creation - works in both Node.js and Edge
+// Web Crypto API signature creation - works in both Node.js ≥18 and Edge
 async function createSignature(payload: string): Promise<string> {
+  if (!globalThis.crypto?.subtle) {
+    throw new Error('Web Crypto API not available. Requires Node.js ≥18 or Edge runtime.');
+  }
+  
   const encoder = new TextEncoder();
   const keyData = encoder.encode(SESSION_SECRET);
   const payloadData = encoder.encode(payload);
