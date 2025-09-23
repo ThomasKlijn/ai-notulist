@@ -1,0 +1,213 @@
+[Middleware] Applied no-cache headers to critical path: /login
+ ⚠ Unsupported metadata themeColor is configured in metadata export in /login. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ ⚠ Unsupported metadata viewport is configured in metadata export in /login. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+[Middleware] Applied no-cache headers to critical path: /login
+ ⚠ Unsupported metadata themeColor is configured in metadata export in /login. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ ⚠ Unsupported metadata viewport is configured in metadata export in /login. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+[Middleware] Applied no-cache headers to critical path: /dashboard
+[Middleware] Applied no-cache headers to critical path: /dashboard
+[Middleware] Applied no-cache headers to critical path: /login
+ ⚠ Unsupported metadata themeColor is configured in metadata export in /login. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ ⚠ Unsupported metadata viewport is configured in metadata export in /login. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+[Middleware] Applied no-cache headers to critical path: /meetings/new
+ ⚠ Unsupported metadata themeColor is configured in metadata export in /meetings/new. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ ⚠ Unsupported metadata viewport is configured in metadata export in /meetings/new. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+[Middleware] Applied no-cache headers to critical path: /meetings/new
+ ⚠ Unsupported metadata themeColor is configured in metadata export in /meetings/new. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ ⚠ Unsupported metadata viewport is configured in metadata export in /meetings/new. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+[Middleware] Applied no-cache headers to critical path: /meetings/new
+ ⚠ Unsupported metadata themeColor is configured in metadata export in /meetings/new. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ ⚠ Unsupported metadata viewport is configured in metadata export in /meetings/new. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ ⚠ Unsupported metadata themeColor is configured in metadata export in /meetings/[id]. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ ⚠ Unsupported metadata viewport is configured in metadata export in /meetings/[id]. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+Storing audio chunk 0 for meeting 000098ee-881d-4297-99ba-bb98334fabfa, size: 241570 bytes
+Successfully stored chunk 0 to file: /tmp/audio-chunks/000098ee-881d-4297-99ba-bb98334fabfa-chunk-0.webm
+Storing audio chunk 1 for meeting 000098ee-881d-4297-99ba-bb98334fabfa, size: 243939 bytes
+Successfully stored chunk 1 to file: /tmp/audio-chunks/000098ee-881d-4297-99ba-bb98334fabfa-chunk-1.webm
+Storing audio chunk 2 for meeting 000098ee-881d-4297-99ba-bb98334fabfa, size: 243623 bytes
+Successfully stored chunk 2 to file: /tmp/audio-chunks/000098ee-881d-4297-99ba-bb98334fabfa-chunk-2.webm
+Storing audio chunk 3 for meeting 000098ee-881d-4297-99ba-bb98334fabfa, size: 243117 bytes
+Successfully stored chunk 3 to file: /tmp/audio-chunks/000098ee-881d-4297-99ba-bb98334fabfa-chunk-3.webm
+Storing audio chunk 4 for meeting 000098ee-881d-4297-99ba-bb98334fabfa, size: 244070 bytes
+Successfully stored chunk 4 to file: /tmp/audio-chunks/000098ee-881d-4297-99ba-bb98334fabfa-chunk-4.webm
+🚀 Starting serialized processing for meeting 000098ee-881d-4297-99ba-bb98334fabfa
+Starting processing for meeting 000098ee-881d-4297-99ba-bb98334fabfa
+Storing audio chunk 5 for meeting 000098ee-881d-4297-99ba-bb98334fabfa, size: 159429 bytes
+Successfully stored chunk 5 to file: /tmp/audio-chunks/000098ee-881d-4297-99ba-bb98334fabfa-chunk-5.webm
+🎯 OPTIMIZED: Processing audio chunks sequentially with speaker analysis...
+🔄 Starting sequential chunk transcription with speaker analysis for meeting 000098ee-881d-4297-99ba-bb98334fabfa
+📋 Found 6 chunks to process sequentially
+🎙️ Processing chunk 0 (1/6)...
+📥 Chunk 0 size: 236 KB
+🎙️ [ElevenLabs] Starting enhanced transcription with speaker analysis...
+✅ [ElevenLabs] Enhanced transcription complete with 0 speakers
+✅ Chunk 0 transcribed: 201 chars, 0 speakers
+🗑️ Cleaned up chunk file: 000098ee-881d-4297-99ba-bb98334fabfa-chunk-0.webm
+🎙️ Processing chunk 1 (2/6)...
+📥 Chunk 1 size: 238 KB
+🎙️ [ElevenLabs] Starting enhanced transcription with speaker analysis...
+❌ [ElevenLabs] Enhanced transcription failed: Error: ElevenLabs API error: 400
+    at e$ (.next/server/chunks/348.js:33:3654)
+    at async e4.transcribeChunksWithSpeakers (.next/server/chunks/348.js:33:8451)
+    at async e4.doProcessMeeting (.next/server/chunks/348.js:33:5972)
+🎙️ [ElevenLabs] Transcribing audio: 243939 bytes, language: nl
+🚀 [ElevenLabs] Sending request to Scribe API...
+🔑 [ElevenLabs] API Key configured: true
+📊 [ElevenLabs] File size: 243939 bytes
+📊 [ElevenLabs] Language: nl
+📊 [ElevenLabs] Model: scribe_v1
+❌ [ElevenLabs] API Error (400): {"detail":{"status":"invalid_content","message":"File recording.webm is corrupted. Please ensure it is playable audio."}}
+❌ [ElevenLabs] Error transcribing audio: Error: ElevenLabs API error: 400 - {"detail":{"status":"invalid_content","message":"File recording.webm is corrupted. Please ensure it is playable audio."}}
+    at eZ (.next/server/chunks/348.js:33:1757)
+    at async e$ (.next/server/chunks/348.js:33:4225)
+    at async e4.transcribeChunksWithSpeakers (.next/server/chunks/348.js:33:8451)
+    at async e4.doProcessMeeting (.next/server/chunks/348.js:33:5972)
+❌ Error processing chunk 1: Error: Failed to transcribe audio with ElevenLabs: ElevenLabs API error: 400 - {"detail":{"status":"invalid_content","message":"File recording.webm is corrupted. Please ensure it is playable audio."}}
+    at eZ (.next/server/chunks/348.js:33:2900)
+    at async e$ (.next/server/chunks/348.js:33:4225)
+    at async e4.transcribeChunksWithSpeakers (.next/server/chunks/348.js:33:8451)
+    at async e4.doProcessMeeting (.next/server/chunks/348.js:33:5972)
+🎙️ Processing chunk 2 (2/6)...
+📥 Chunk 2 size: 238 KB
+🎙️ [ElevenLabs] Starting enhanced transcription with speaker analysis...
+🎙️ [ElevenLabs] Transcribing audio: 243623 bytes, language: nl
+❌ [ElevenLabs] Enhanced transcription failed: Error: ElevenLabs API error: 400
+    at e$ (.next/server/chunks/348.js:33:3654)
+    at async e4.transcribeChunksWithSpeakers (.next/server/chunks/348.js:33:8451)
+    at async e4.doProcessMeeting (.next/server/chunks/348.js:33:5972)
+🚀 [ElevenLabs] Sending request to Scribe API...
+🔑 [ElevenLabs] API Key configured: true
+📊 [ElevenLabs] File size: 243623 bytes
+📊 [ElevenLabs] Language: nl
+📊 [ElevenLabs] Model: scribe_v1
+❌ [ElevenLabs] API Error (400): {"detail":{"status":"invalid_content","message":"File recording.webm is corrupted. Please ensure it is playable audio."}}
+❌ [ElevenLabs] Error transcribing audio: Error: ElevenLabs API error: 400 - {"detail":{"status":"invalid_content","message":"File recording.webm is corrupted. Please ensure it is playable audio."}}
+    at eZ (.next/server/chunks/348.js:33:1757)
+    at async e$ (.next/server/chunks/348.js:33:4225)
+    at async e4.transcribeChunksWithSpeakers (.next/server/chunks/348.js:33:8451)
+    at async e4.doProcessMeeting (.next/server/chunks/348.js:33:5972)
+❌ Error processing chunk 2: Error: Failed to transcribe audio with ElevenLabs: ElevenLabs API error: 400 - {"detail":{"status":"invalid_content","message":"File recording.webm is corrupted. Please ensure it is playable audio."}}
+    at eZ (.next/server/chunks/348.js:33:2900)
+    at async e$ (.next/server/chunks/348.js:33:4225)
+    at async e4.transcribeChunksWithSpeakers (.next/server/chunks/348.js:33:8451)
+    at async e4.doProcessMeeting (.next/server/chunks/348.js:33:5972)
+🎙️ Processing chunk 3 (2/6)...
+📥 Chunk 3 size: 237 KB
+🎙️ [ElevenLabs] Starting enhanced transcription with speaker analysis...
+❌ [ElevenLabs] Enhanced transcription failed: Error: ElevenLabs API error: 400
+    at e$ (.next/server/chunks/348.js:33:3654)
+    at async e4.transcribeChunksWithSpeakers (.next/server/chunks/348.js:33:8451)
+🎙️ [ElevenLabs] Transcribing audio: 243117 bytes, language: nl
+    at async e4.doProcessMeeting (.next/server/chunks/348.js:33:5972)
+🚀 [ElevenLabs] Sending request to Scribe API...
+🔑 [ElevenLabs] API Key configured: true
+📊 [ElevenLabs] File size: 243117 bytes
+📊 [ElevenLabs] Language: nl
+📊 [ElevenLabs] Model: scribe_v1
+❌ [ElevenLabs] API Error (400): {"detail":{"status":"invalid_content","message":"File recording.webm is corrupted. Please ensure it is playable audio."}}
+❌ [ElevenLabs] Error transcribing audio: Error: ElevenLabs API error: 400 - {"detail":{"status":"invalid_content","message":"File recording.webm is corrupted. Please ensure it is playable audio."}}
+    at eZ (.next/server/chunks/348.js:33:1757)
+    at async e$ (.next/server/chunks/348.js:33:4225)
+    at async e4.transcribeChunksWithSpeakers (.next/server/chunks/348.js:33:8451)
+    at async e4.doProcessMeeting (.next/server/chunks/348.js:33:5972)
+❌ Error processing chunk 3: Error: Failed to transcribe audio with ElevenLabs: ElevenLabs API error: 400 - {"detail":{"status":"invalid_content","message":"File recording.webm is corrupted. Please ensure it is playable audio."}}
+    at eZ (.next/server/chunks/348.js:33:2900)
+    at async e$ (.next/server/chunks/348.js:33:4225)
+    at async e4.transcribeChunksWithSpeakers (.next/server/chunks/348.js:33:8451)
+    at async e4.doProcessMeeting (.next/server/chunks/348.js:33:5972)
+🎙️ Processing chunk 4 (2/6)...
+📥 Chunk 4 size: 238 KB
+🎙️ [ElevenLabs] Starting enhanced transcription with speaker analysis...
+❌ [ElevenLabs] Enhanced transcription failed: Error: ElevenLabs API error: 400
+🎙️ [ElevenLabs] Transcribing audio: 244070 bytes, language: nl
+    at e$ (.next/server/chunks/348.js:33:3654)
+    at async e4.transcribeChunksWithSpeakers (.next/server/chunks/348.js:33:8451)
+    at async e4.doProcessMeeting (.next/server/chunks/348.js:33:5972)
+🚀 [ElevenLabs] Sending request to Scribe API...
+🔑 [ElevenLabs] API Key configured: true
+📊 [ElevenLabs] File size: 244070 bytes
+📊 [ElevenLabs] Language: nl
+📊 [ElevenLabs] Model: scribe_v1
+❌ [ElevenLabs] API Error (400): {"detail":{"status":"invalid_content","message":"File recording.webm is corrupted. Please ensure it is playable audio."}}
+❌ [ElevenLabs] Error transcribing audio: Error: ElevenLabs API error: 400 - {"detail":{"status":"invalid_content","message":"File recording.webm is corrupted. Please ensure it is playable audio."}}
+    at eZ (.next/server/chunks/348.js:33:1757)
+    at async e$ (.next/server/chunks/348.js:33:4225)
+    at async e4.transcribeChunksWithSpeakers (.next/server/chunks/348.js:33:8451)
+    at async e4.doProcessMeeting (.next/server/chunks/348.js:33:5972)
+❌ Error processing chunk 4: Error: Failed to transcribe audio with ElevenLabs: ElevenLabs API error: 400 - {"detail":{"status":"invalid_content","message":"File recording.webm is corrupted. Please ensure it is playable audio."}}
+    at eZ (.next/server/chunks/348.js:33:2900)
+    at async e$ (.next/server/chunks/348.js:33:4225)
+    at async e4.transcribeChunksWithSpeakers (.next/server/chunks/348.js:33:8451)
+    at async e4.doProcessMeeting (.next/server/chunks/348.js:33:5972)
+🎙️ Processing chunk 5 (2/6)...
+📥 Chunk 5 size: 156 KB
+🎙️ [ElevenLabs] Starting enhanced transcription with speaker analysis...
+❌ [ElevenLabs] Enhanced transcription failed: Error: ElevenLabs API error: 400
+    at e$ (.next/server/chunks/348.js:33:3654)
+🎙️ [ElevenLabs] Transcribing audio: 159429 bytes, language: nl
+    at async e4.transcribeChunksWithSpeakers (.next/server/chunks/348.js:33:8451)
+    at async e4.doProcessMeeting (.next/server/chunks/348.js:33:5972)
+🚀 [ElevenLabs] Sending request to Scribe API...
+🔑 [ElevenLabs] API Key configured: true
+📊 [ElevenLabs] File size: 159429 bytes
+📊 [ElevenLabs] Language: nl
+📊 [ElevenLabs] Model: scribe_v1
+❌ [ElevenLabs] API Error (400): {"detail":{"status":"invalid_content","message":"File recording.webm is corrupted. Please ensure it is playable audio."}}
+❌ [ElevenLabs] Error transcribing audio: Error: ElevenLabs API error: 400 - {"detail":{"status":"invalid_content","message":"File recording.webm is corrupted. Please ensure it is playable audio."}}
+    at eZ (.next/server/chunks/348.js:33:1757)
+    at async e$ (.next/server/chunks/348.js:33:4225)
+    at async e4.transcribeChunksWithSpeakers (.next/server/chunks/348.js:33:8451)
+    at async e4.doProcessMeeting (.next/server/chunks/348.js:33:5972)
+❌ Error processing chunk 5: Error: Failed to transcribe audio with ElevenLabs: ElevenLabs API error: 400 - {"detail":{"status":"invalid_content","message":"File recording.webm is corrupted. Please ensure it is playable audio."}}
+    at eZ (.next/server/chunks/348.js:33:2900)
+    at async e$ (.next/server/chunks/348.js:33:4225)
+    at async e4.transcribeChunksWithSpeakers (.next/server/chunks/348.js:33:8451)
+    at async e4.doProcessMeeting (.next/server/chunks/348.js:33:5972)
+🎉 Sequential transcription completed: 1 chunks processed, 201 total characters
+👥 Final speaker analysis: 0 unique speakers over 0s
+✅ Sequential transcription completed (201 chars): (slagroom knelt op tafel) Oké, nou, deze meeting, eh, met Job is, eh, in het leven geroepen om te ki...
+👥 Speaker analysis: 0 speakers detected
+Generating AI summary...
+Meeting 000098ee-881d-4297-99ba-bb98334fabfa processing completed successfully
+🗑️ Force cleanup: scanning /tmp/audio-chunks for meeting 000098ee-881d-4297-99ba-bb98334fabfa files...
+🗋 Found 5 files to cleanup for meeting 000098ee-881d-4297-99ba-bb98334fabfa
+✅ Cleaned up: 000098ee-881d-4297-99ba-bb98334fabfa-chunk-1.webm
+✅ Cleaned up: 000098ee-881d-4297-99ba-bb98334fabfa-chunk-2.webm
+✅ Cleaned up: 000098ee-881d-4297-99ba-bb98334fabfa-chunk-3.webm
+✅ Cleaned up: 000098ee-881d-4297-99ba-bb98334fabfa-chunk-4.webm
+✅ Cleaned up: 000098ee-881d-4297-99ba-bb98334fabfa-chunk-5.webm
+🎉 Cleanup completed for meeting 000098ee-881d-4297-99ba-bb98334fabfa
+Starting email delivery for meeting 000098ee-881d-4297-99ba-bb98334fabfa to 2 attendees
+sendEmailSummary called for meeting 000098ee-881d-4297-99ba-bb98334fabfa with 2 attendees
+Attendees: [ 'thomasklijn@icloud.com', 'thomasklijn23@gmail.com' ]
+EmailService imported, calling sendMeetingSummary...
+📧 EmailService.sendMeetingSummary called with:
+  - Title: test
+  - Attendees: 2 (thomasklijn@icloud.com, thomasklijn23@gmail.com)
+  - Language: nl
+  - Summary keys: title,generalSummary,keyPoints,decisions,actionItems,participants,duration,nextSteps,speakers
+📧 Email subject: Meeting Samenvatting: test
+📧 Email content generated, HTML length: 2806, text length: 1171
+📧 Preparing to send emails to 2 attendees...
+📧 Sending email 1/2 to: thomasklijn@icloud.com
+📧 Sending email 2/2 to: thomasklijn23@gmail.com
+📧 Executing 2 email sends...
+✅ Meeting summary sent to 2 attendees
+✅ Email summary sent successfully for meeting 000098ee-881d-4297-99ba-bb98334fabfa
+✅ Serialized processing completed for 000098ee-881d-4297-99ba-bb98334fabfa
+==> Detected service running on port 10000
+==> Docs on specifying a port: https://render.com/docs/web-services#port-binding

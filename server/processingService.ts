@@ -162,18 +162,14 @@ export class MeetingProcessingService {
     }
   }
 
-  // Memory-optimized: Process chunks sequentially WITH SPEAKER DIARIZATION
+  // FIXED: Combine WebM chunks first, then transcribe as single file WITH SPEAKER DIARIZATION
   private async transcribeChunksWithSpeakers(meetingId: string, language: string): Promise<{
     transcription: string;
     speakers: Array<{ id: string; duration: number; percentage: number; }>;
   }> {
-    console.log(`🔄 Starting sequential chunk transcription with speaker analysis for meeting ${meetingId}`);
+    console.log(`🔄 FIXED: Combining WebM chunks before transcription for meeting ${meetingId}`);
     
     const tempDir = path.join('/tmp', 'audio-chunks');
-    let fullTranscription = '';
-    let allSpeakers = new Map<string, { duration: number; segments: number; }>();
-    let totalDuration = 0;
-    let processedChunks = 0;
     
     try {
       // Get all chunk files for this meeting, sorted by index
@@ -197,72 +193,42 @@ export class MeetingProcessingService {
         throw new Error('No audio chunks found for transcription');
       }
       
-      // Process each chunk individually with per-chunk consent checks
-      for (const chunkFile of chunkFiles) {
-        if (chunkFile && fs.existsSync(chunkFile.filePath)) {
-          try {
-            // GDPR: Check consent before processing each chunk for immediate halt
-            const consentCheck = await storage.getMeeting(meetingId);
-            if (consentCheck?.status === 'cancelled') {
-              console.log(`❌ GDPR: Transcription halted at chunk ${chunkFile.chunkIndex} - meeting cancelled`);
-              // Force cleanup of remaining chunks when halted
-              await this.forceCleanupMeetingChunks(meetingId);
-              throw new Error('Processing halted due to meeting cancellation');
-            }
-            
-            console.log(`🎙️ Processing chunk ${chunkFile.chunkIndex} (${processedChunks + 1}/${chunkFiles.length})...`);
-            
-            // Read chunk into memory temporarily
-            const chunkBuffer = await readFile(chunkFile.filePath);
-            console.log(`📥 Chunk ${chunkFile.chunkIndex} size: ${Math.round(chunkBuffer.length / 1024)} KB`);
-            
-            // Transcribe this chunk WITH speaker analysis  
-            const chunkResult = await transcribeWithSpeakerAnalysis(chunkBuffer, language);
-            
-            // Add to full transcription with space separator
-            if (chunkResult.text.trim()) {
-              fullTranscription += (fullTranscription ? ' ' : '') + chunkResult.text.trim();
-              console.log(`✅ Chunk ${chunkFile.chunkIndex} transcribed: ${chunkResult.text.length} chars, ${chunkResult.speakers.length} speakers`);
-              
-              // Accumulate speaker data
-              totalDuration += chunkResult.totalDuration;
-              for (const speaker of chunkResult.speakers) {
-                if (!allSpeakers.has(speaker.id)) {
-                  allSpeakers.set(speaker.id, { duration: 0, segments: 0 });
-                }
-                const existing = allSpeakers.get(speaker.id)!;
-                existing.duration += speaker.duration;
-                existing.segments++;
-              }
-            }
-            
-            processedChunks++;
-            
-            // Clean up chunk file immediately to save disk space
-            await unlink(chunkFile.filePath);
-            console.log(`🗑️ Cleaned up chunk file: ${chunkFile.file}`);
-            
-          } catch (error) {
-            console.error(`❌ Error processing chunk ${chunkFile.chunkIndex}:`, error);
-            // Continue with next chunk instead of failing completely
-          }
-        }
+      // GDPR consent check before processing
+      const consentCheck = await storage.getMeeting(meetingId);
+      if (consentCheck?.status === 'cancelled') {
+        console.log(`❌ GDPR: Transcription halted - meeting cancelled`);
+        await this.forceCleanupMeetingChunks(meetingId);
+        throw new Error('Processing halted due to meeting cancellation');
       }
       
-      // Calculate final speaker percentages
-      const speakers = Array.from(allSpeakers.entries()).map(([id, data]) => ({
-        id,
-        duration: Math.round(data.duration * 10) / 10,
-        percentage: totalDuration > 0 ? Math.round((data.duration / totalDuration) * 100) : 0
-      })).sort((a, b) => b.percentage - a.percentage); // Sort by speaking time
+      // Filter out null values for TypeScript safety
+      const validChunkFiles = chunkFiles.filter((f): f is { file: string; chunkIndex: number; filePath: string } => f !== null);
       
-      console.log(`🎉 Sequential transcription completed: ${processedChunks} chunks processed, ${fullTranscription.length} total characters`);
-      console.log(`👥 Final speaker analysis: ${speakers.length} unique speakers over ${Math.round(totalDuration)}s`);
-      speakers.forEach(speaker => {
-        console.log(`   - ${speaker.id}: ${speaker.duration}s (${speaker.percentage}%)`);
-      });
+      // 🔧 FIX: Combine all WebM chunks into single buffer for proper transcription
+      console.log(`🔗 Combining ${validChunkFiles.length} WebM chunks into single file...`);
+      const combinedBuffer = await this.combineWebMChunks(validChunkFiles);
+      console.log(`✅ Combined WebM file size: ${Math.round(combinedBuffer.length / 1024)} KB`);
       
-      return { transcription: fullTranscription, speakers };
+      // Transcribe the complete combined file WITH speaker analysis
+      console.log(`🎙️ Transcribing complete WebM file with ElevenLabs Scribe...`);
+      const result = await transcribeWithSpeakerAnalysis(combinedBuffer, language);
+      
+      console.log(`✅ Transcription completed: ${result.text.length} chars, ${result.speakers.length} speakers`);
+      
+      // Clean up individual chunk files after successful transcription
+      await this.cleanupChunkFiles(validChunkFiles);
+      
+      // Format speakers data for database
+      const speakers = result.speakers.map(speaker => ({
+        id: speaker.id || `speaker-${Math.random().toString(36).substr(2, 9)}`,
+        duration: speaker.duration || 0,
+        percentage: speaker.percentage || 0
+      }));
+      
+      return {
+        transcription: result.text,
+        speakers
+      };
       
     } catch (error) {
       console.error(`❌ Error in sequential chunk transcription:`, error);
@@ -271,6 +237,57 @@ export class MeetingProcessingService {
       await this.forceCleanupMeetingChunks(meetingId);
       throw error;
     }
+  }
+  
+  // Helper method to combine WebM chunks into single buffer for transcription
+  private async combineWebMChunks(chunkFiles: Array<{ file: string; chunkIndex: number; filePath: string }>): Promise<Buffer> {
+    console.log(`🔗 Combining ${chunkFiles.length} WebM chunks...`);
+    
+    const chunks: Buffer[] = [];
+    let totalSize = 0;
+    
+    for (const chunkFile of chunkFiles) {
+      if (chunkFile && fs.existsSync(chunkFile.filePath)) {
+        try {
+          const chunkBuffer = await readFile(chunkFile.filePath);
+          chunks.push(chunkBuffer);
+          totalSize += chunkBuffer.length;
+          console.log(`📦 Chunk ${chunkFile.chunkIndex}: ${Math.round(chunkBuffer.length / 1024)} KB`);
+        } catch (error) {
+          console.error(`⚠️ Failed to read chunk ${chunkFile.chunkIndex}:`, error);
+        }
+      }
+    }
+    
+    if (chunks.length === 0) {
+      throw new Error('No valid audio chunks found to combine');
+    }
+    
+    console.log(`🔗 Combining ${chunks.length} chunks, total size: ${Math.round(totalSize / 1024)} KB`);
+    const combined = Buffer.concat(chunks);
+    console.log(`✅ Combined WebM buffer created: ${Math.round(combined.length / 1024)} KB`);
+    
+    return combined;
+  }
+  
+  // Helper method to clean up chunk files after successful processing
+  private async cleanupChunkFiles(chunkFiles: Array<{ file: string; chunkIndex: number; filePath: string }>): Promise<void> {
+    console.log(`🗑️ Cleaning up ${chunkFiles.length} chunk files...`);
+    
+    let cleanedCount = 0;
+    for (const chunkFile of chunkFiles) {
+      if (chunkFile && fs.existsSync(chunkFile.filePath)) {
+        try {
+          await unlink(chunkFile.filePath);
+          cleanedCount++;
+          console.log(`✅ Deleted: ${chunkFile.file}`);
+        } catch (error) {
+          console.error(`⚠️ Failed to delete ${chunkFile.file}:`, error);
+        }
+      }
+    }
+    
+    console.log(`🎉 Cleaned up ${cleanedCount}/${chunkFiles.length} chunk files`);
   }
   
   // Robust cleanup that doesn't depend on in-memory Map (works after restarts)
