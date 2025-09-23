@@ -1,0 +1,21 @@
+{
+  "/_not-found/page": "/_not-found",
+  "/api/auth/check/route": "/api/auth/check",
+  "/api/auth/logout/route": "/api/auth/logout",
+  "/api/auth/simple-login/route": "/api/auth/simple-login",
+  "/api/consent/[token]/route": "/api/consent/[token]",
+  "/api/debug-auth/route": "/api/debug-auth",
+  "/api/meetings/[id]/status/route": "/api/meetings/[id]/status",
+  "/api/meetings/route": "/api/meetings",
+  "/api/meetings/[id]/audio/route": "/api/meetings/[id]/audio",
+  "/api/meetings/[id]/finish/route": "/api/meetings/[id]/finish",
+  "/api/meetings/[id]/reprocess/route": "/api/meetings/[id]/reprocess",
+  "/auth/error/page": "/auth/error",
+  "/consent/[token]/page": "/consent/[token]",
+  "/dashboard/page": "/dashboard",
+  "/meetings/[id]/page": "/meetings/[id]",
+  "/page": "/",
+  "/privacy/page": "/privacy",
+  "/login/page": "/login",
+  "/meetings/new/page": "/meetings/new"
+}

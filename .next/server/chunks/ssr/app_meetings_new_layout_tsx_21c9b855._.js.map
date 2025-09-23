@@ -1,6 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "sections": [
-    {"offset": {"line": 4, "column": 0}, "map": {"version":3,"sources":["file:///home/runner/workspace/app/meetings/new/layout.tsx"],"sourcesContent":["import { Metadata } from 'next';\n\n// Prevent all caching for new meeting page\nexport const metadata: Metadata = {\n  title: 'Nieuwe Meeting - AI Notulist',\n  description: 'Create a new meeting for recording and AI processing',\n  robots: 'noindex, nofollow',\n};\n\n// Force no caching for new meeting page\nexport const dynamic = 'force-dynamic';\n\nexport default function NewMeetingLayout({\n  children,\n}: {\n  children: React.ReactNode\n}) {\n  // Don't define custom header, let the page handle its own layout\n  return <>{children}</>;\n}"],"names":[],"mappings":";;;;;;;;;;AAGO,MAAM,WAAqB;IAChC,OAAO;IACP,aAAa;IACb,QAAQ;AACV;AAGO,MAAM,UAAU;AAER,SAAS,iBAAiB,EACvC,QAAQ,EAGT;IACC,iEAAiE;IACjE,qBAAO;kBAAG;;AACZ","debugId":null}}]
-}

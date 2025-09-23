@@ -1,0 +1,77 @@
+
+Search
+
+Live tail
+GMT+2
+
+Menu
+
+==> Downloading cache...
+==> Cloning from https://github.com/ThomasKlijn/ai-notulist
+==> Checking out commit 886154c90ec51f639dc7c5eeec7e4052bab9f43a in branch main
+==> Transferred 476MB in 9s. Extraction took 6s.
+==> Installing Python version 3.13.4...
+==> Using Python version 3.13.4 (default)
+==> Docs on specifying a Python version: https://render.com/docs/python-version
+==> Using Poetry version 2.1.3 (default)
+==> Docs on specifying a Poetry version: https://render.com/docs/poetry-version
+==> Running build command 'npm install && npx next build'...
+==> Using Node.js version 20.11.1 via /opt/render/project/src/.node-version
+==> Docs on specifying a Node.js version: https://render.com/docs/node-version
+added 23 packages, and audited 136 packages in 987ms
+26 packages are looking for funding
+  run `npm fund` for details
+1 high severity vulnerability
+To address all issues, run:
+  npm audit fix
+Run `npm audit` for details.
+   ▲ Next.js 15.5.3
+   - Environments: .env.local
+   Creating an optimized production build ...
+ ⚠ Compiled with warnings in 7.0s
+./lib/auth.ts
+Attempted import error: 'Issuer' is not exported from 'openid-client' (imported as 'Issuer').
+Import trace for requested module:
+./lib/auth.ts
+./app/api/auth/callback/route.ts
+./lib/auth.ts
+Attempted import error: 'generators' is not exported from 'openid-client' (imported as 'generators').
+Import trace for requested module:
+./lib/auth.ts
+./app/api/auth/callback/route.ts
+./lib/auth.ts
+Attempted import error: 'generators' is not exported from 'openid-client' (imported as 'generators').
+Import trace for requested module:
+./lib/auth.ts
+./app/api/auth/callback/route.ts
+./lib/auth.ts
+Attempted import error: 'generators' is not exported from 'openid-client' (imported as 'generators').
+Import trace for requested module:
+./lib/auth.ts
+./app/api/auth/callback/route.ts
+./lib/auth.ts
+Attempted import error: 'generators' is not exported from 'openid-client' (imported as 'generators').
+Import trace for requested module:
+./lib/auth.ts
+./app/api/auth/callback/route.ts
+./lib/auth.ts
+Attempted import error: 'generators' is not exported from 'openid-client' (imported as 'generators').
+Import trace for requested module:
+./lib/auth.ts
+./app/api/auth/callback/route.ts
+ ✓ Compiled successfully in 10.7s
+   Skipping linting
+   Checking validity of types ...
+Failed to compile.
+./lib/auth.ts:1:10
+Type error: Module '"openid-client"' has no exported member 'Issuer'.
+> 1 | import { Issuer, Client, generators } from "openid-client";
+    |          ^
+  2 | import { seal, unseal } from "@hapi/iron";
+  3 | import { storage } from "../server/storage";
+  4 | import { db } from "../server/db";
+Next.js build worker exited with code: 1 and signal: null
+==> Build failed 😞
+==> Common ways to troubleshoot your deploy: https://render.com/docs/troubleshooting-deploys
+==> Using Node.js version 20.11.1 via /opt/render/project/src/.node-version
+==> Docs on specifying a Node.js version: https://render.com/docs/node-version

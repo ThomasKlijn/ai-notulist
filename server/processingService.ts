@@ -274,7 +274,7 @@ export class MeetingProcessingService {
   }
   
   // Robust cleanup that doesn't depend on in-memory Map (works after restarts)
-  private async forceCleanupMeetingChunks(meetingId: string): Promise<void> {
+  public async forceCleanupMeetingChunks(meetingId: string): Promise<void> {
     const tempDir = path.join('/tmp', 'audio-chunks');
     
     try {

@@ -1,6 +1,21 @@
 {
   "/_not-found/page": "app/_not-found/page.js",
   "/api/auth/check/route": "app/api/auth/check/route.js",
+  "/api/auth/logout/route": "app/api/auth/logout/route.js",
+  "/api/auth/simple-login/route": "app/api/auth/simple-login/route.js",
+  "/api/consent/[token]/route": "app/api/consent/[token]/route.js",
+  "/api/debug-auth/route": "app/api/debug-auth/route.js",
+  "/api/meetings/[id]/status/route": "app/api/meetings/[id]/status/route.js",
+  "/api/meetings/route": "app/api/meetings/route.js",
+  "/api/meetings/[id]/audio/route": "app/api/meetings/[id]/audio/route.js",
+  "/api/meetings/[id]/finish/route": "app/api/meetings/[id]/finish/route.js",
+  "/api/meetings/[id]/reprocess/route": "app/api/meetings/[id]/reprocess/route.js",
+  "/auth/error/page": "app/auth/error/page.js",
+  "/consent/[token]/page": "app/consent/[token]/page.js",
   "/dashboard/page": "app/dashboard/page.js",
-  "/page": "app/page.js"
+  "/meetings/[id]/page": "app/meetings/[id]/page.js",
+  "/page": "app/page.js",
+  "/privacy/page": "app/privacy/page.js",
+  "/login/page": "app/login/page.js",
+  "/meetings/new/page": "app/meetings/new/page.js"
 }

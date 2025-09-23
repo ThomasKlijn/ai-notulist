@@ -259,4 +259,28 @@ export class AudioStorageService {
   async getFirstAudioChunk(meetingId: string): Promise<Buffer | null> {
     return audioStorage.getFirstAudioChunk(meetingId);
   }
+
+  async deleteAudioChunk(chunkKey: string): Promise<void> {
+    // Parse meetingId and chunkIndex from chunkKey
+    const parts = chunkKey.split('-chunk-');
+    if (parts.length !== 2) {
+      console.warn(`Invalid chunk key format for deletion: ${chunkKey}`);
+      return;
+    }
+    
+    const meetingId = parts[0];
+    const chunkIndex = parseInt(parts[1]);
+    const filePath = path.join('/tmp', 'audio-chunks', `${meetingId}-chunk-${chunkIndex}.webm`);
+    
+    try {
+      if (fs.existsSync(filePath)) {
+        await unlink(filePath);
+        console.log(`✅ Deleted audio chunk file: ${filePath}`);
+      } else {
+        console.log(`⚠️ Audio chunk file not found (already deleted?): ${filePath}`);
+      }
+    } catch (error) {
+      console.error(`❌ Error deleting audio chunk ${chunkKey}:`, error);
+    }
+  }
 }

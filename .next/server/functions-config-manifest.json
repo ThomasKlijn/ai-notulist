@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "functions": {
+    "/api/meetings/[id]/finish": {},
+    "/api/meetings/[id]/reprocess": {},
+    "/api/meetings/[id]/audio": {}
+  }
+}
