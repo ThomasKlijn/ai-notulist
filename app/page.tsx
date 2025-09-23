@@ -16,4 +16,3 @@ export default async function Home() {
 
 // Force no caching for this page
 export const dynamic = 'force-dynamic';
-export const revalidate = 0;
