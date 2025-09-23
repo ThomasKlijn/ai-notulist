@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "functions": {
+    "/api/auth/simple-login": {},
+    "/api/meetings/[id]/audio": {},
+    "/api/meetings/[id]/finish": {},
+    "/api/meetings/[id]/reprocess": {}
+  }
+}

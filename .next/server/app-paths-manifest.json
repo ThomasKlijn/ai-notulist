@@ -8,14 +8,14 @@
   "/api/meetings/route": "app/api/meetings/route.js",
   "/api/auth/simple-login/route": "app/api/auth/simple-login/route.js",
   "/api/meetings/[id]/audio/route": "app/api/meetings/[id]/audio/route.js",
-  "/api/meetings/[id]/reprocess/route": "app/api/meetings/[id]/reprocess/route.js",
   "/api/meetings/[id]/finish/route": "app/api/meetings/[id]/finish/route.js",
+  "/api/meetings/[id]/reprocess/route": "app/api/meetings/[id]/reprocess/route.js",
   "/auth/error/page": "app/auth/error/page.js",
   "/consent/[token]/page": "app/consent/[token]/page.js",
   "/dashboard/page": "app/dashboard/page.js",
   "/meetings/[id]/page": "app/meetings/[id]/page.js",
-  "/page": "app/page.js",
   "/privacy/page": "app/privacy/page.js",
+  "/page": "app/page.js",
   "/login/page": "app/login/page.js",
   "/meetings/new/page": "app/meetings/new/page.js"
 }

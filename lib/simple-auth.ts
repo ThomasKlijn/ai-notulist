@@ -5,20 +5,20 @@
 const SESSION_SECRET = process.env.SESSION_SECRET || "super-secure-session-secret-key-for-vandelft-groep-ai-notulist-2025-render-deployment";
 
 // Simple token creation with signature (JWT-like but simplified)
-function createSignedToken(data: any): string {
+async function createSignedToken(data: any): Promise<string> {
   const payload = JSON.stringify(data);
-  const signature = createSignature(payload);
+  const signature = await createSignature(payload);
   const combined = JSON.stringify({ payload, signature });
   return Buffer.from(combined).toString('base64url');
 }
 
-function verifySignedToken(token: string): any | null {
+async function verifySignedToken(token: string): Promise<any | null> {
   try {
     const combined = Buffer.from(token, 'base64url').toString();
     const { payload, signature } = JSON.parse(combined);
     
     // Verify signature
-    const expectedSignature = createSignature(payload);
+    const expectedSignature = await createSignature(payload);
     if (signature !== expectedSignature) {
       return null;
     }
@@ -36,10 +36,27 @@ function verifySignedToken(token: string): any | null {
   }
 }
 
-// Simple signature creation using session secret
-function createSignature(payload: string): string {
-  const crypto = require('crypto');
-  return crypto.createHmac('sha256', SESSION_SECRET).update(payload).digest('hex');
+// Web Crypto API signature creation - works in both Node.js and Edge
+async function createSignature(payload: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const keyData = encoder.encode(SESSION_SECRET);
+  const payloadData = encoder.encode(payload);
+  
+  // Import secret as HMAC key
+  const cryptoKey = await globalThis.crypto.subtle.importKey(
+    'raw',
+    keyData,
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  
+  // Create signature
+  const signature = await globalThis.crypto.subtle.sign('HMAC', cryptoKey, payloadData);
+  
+  // Convert to hex string
+  const hashArray = Array.from(new Uint8Array(signature));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
 // Stateless session management - no database required
@@ -56,7 +73,7 @@ export async function createSession(userId: string): Promise<string> {
 export async function getSession(token: string): Promise<{ userId: string } | null> {
   if (!token) return null;
   
-  const sessionData = verifySignedToken(token);
+  const sessionData = await verifySignedToken(token);
   if (!sessionData || !sessionData.userId) {
     return null;
   }
@@ -77,7 +94,7 @@ export async function cleanupExpiredSessions(): Promise<void> {
 
 // Generate auth URL for Replit OAuth (simplified)
 export function generateAuthUrl(redirectUri: string): string {
-  const state = crypto.randomUUID();
+  const state = globalThis.crypto?.randomUUID?.() || Math.random().toString(36).substr(2, 9);
   const authUrl = new URL("https://replit.com/oauth/authorize");
   authUrl.searchParams.set("client_id", process.env.REPL_ID || "");
   authUrl.searchParams.set("redirect_uri", redirectUri);
@@ -126,11 +143,11 @@ export function generateLogoutUrl(): string {
   return "/api/auth/logout";
 }
 
-export function encryptSessionId(sessionData: any): string {
+export async function encryptSessionId(sessionData: any): Promise<string> {
   return createSignedToken(sessionData);
 }
 
-export function decryptSessionId(token: string): any {
+export async function decryptSessionId(token: string): Promise<any> {
   return verifySignedToken(token);
 }
 
