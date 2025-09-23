@@ -644,12 +644,17 @@ async function POST(req) {
         // Validate request body
         const validation = createMeetingSchema.safeParse(body);
         if (!validation.success) {
-            return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
+            const errorResponse = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
                 error: 'Invalid input',
                 details: validation.error.issues
             }, {
                 status: 400
             });
+            // Add aggressive cache prevention headers
+            errorResponse.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate, private, max-age=0');
+            errorResponse.headers.set('Pragma', 'no-cache');
+            errorResponse.headers.set('Expires', '0');
+            return errorResponse;
         }
         const { title, attendees, language, consentGiven } = validation.data;
         const id = crypto.randomUUID();
@@ -665,24 +670,39 @@ async function POST(req) {
         const meeting = await __TURBOPACK__imported__module__$5b$project$5d2f$server$2f$storage$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["storage"].createMeeting(meetingData, attendees.filter((a)=>a?.email), user.id);
         // No consent emails sent - consent already given in app
         // Meeting summary with consent confirmation will be sent after recording
-        return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
+        const response = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
             id: meeting.id,
             message: 'Meeting created successfully. Recording can begin.'
         });
+        // Add aggressive cache prevention headers
+        response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate, private, max-age=0');
+        response.headers.set('Pragma', 'no-cache');
+        response.headers.set('Expires', '0');
+        return response;
     } catch (e) {
         if (e.message === 'Authentication required') {
-            return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
+            const authErrorResponse = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
                 error: 'Authentication required'
             }, {
                 status: 401
             });
+            // Add aggressive cache prevention headers
+            authErrorResponse.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate, private, max-age=0');
+            authErrorResponse.headers.set('Pragma', 'no-cache');
+            authErrorResponse.headers.set('Expires', '0');
+            return authErrorResponse;
         }
         console.error('Error creating meeting:', e);
-        return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
+        const serverErrorResponse = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
             error: e?.message ?? 'onbekende fout'
         }, {
             status: 500
         });
+        // Add aggressive cache prevention headers
+        serverErrorResponse.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate, private, max-age=0');
+        serverErrorResponse.headers.set('Pragma', 'no-cache');
+        serverErrorResponse.headers.set('Expires', '0');
+        return serverErrorResponse;
     }
 }
 }),
