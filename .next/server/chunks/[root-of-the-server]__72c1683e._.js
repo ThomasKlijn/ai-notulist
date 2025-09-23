@@ -1,5 +1,5 @@
 module.exports = [
-"[project]/.next-internal/server/app/api/auth/simple-login/route/actions.js [app-rsc] (server actions loader, ecmascript)", ((__turbopack_context__, module, exports) => {
+"[project]/.next-internal/server/app/api/auth/check/route/actions.js [app-rsc] (server actions loader, ecmascript)", ((__turbopack_context__, module, exports) => {
 
 }),
 "[externals]/next/dist/compiled/next-server/app-route-turbo.runtime.dev.js [external] (next/dist/compiled/next-server/app-route-turbo.runtime.dev.js, cjs)", ((__turbopack_context__, module, exports) => {
@@ -720,85 +720,52 @@ async function handleCallback(code) {
     };
 }
 }),
-"[project]/app/api/auth/simple-login/route.ts [app-route] (ecmascript)", ((__turbopack_context__) => {
+"[project]/app/api/auth/check/route.ts [app-route] (ecmascript)", ((__turbopack_context__) => {
 "use strict";
 
 __turbopack_context__.s([
-    "POST",
-    ()=>POST
+    "GET",
+    ()=>GET
 ]);
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/server.js [app-route] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$simple$2d$auth$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/lib/simple-auth.ts [app-route] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$server$2f$storage$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/server/storage.ts [app-route] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$headers$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/headers.js [app-route] (ecmascript)");
 ;
 ;
 ;
-;
-const VALID_CREDENTIALS = {
-    username: 'VanDelftGroep',
-    password: 'JWVD12'
-};
-async function POST(req) {
+async function GET(req) {
     try {
-        const { username, password } = await req.json();
-        // Check credentials
-        if (username !== VALID_CREDENTIALS.username || password !== VALID_CREDENTIALS.password) {
-            const errorResponse = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
-                error: 'Invalid username or password'
+        const cookieStore = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$headers$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["cookies"])();
+        const sessionToken = cookieStore.get('session-token')?.value;
+        if (!sessionToken) {
+            return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
+                authenticated: false
             }, {
                 status: 401
             });
-            // Add aggressive cache prevention headers
-            errorResponse.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate, private, max-age=0');
-            errorResponse.headers.set('Pragma', 'no-cache');
-            errorResponse.headers.set('Expires', '0');
-            return errorResponse;
         }
-        // Create or get user
-        const userId = 'vandelftgroep-user';
-        const user = await __TURBOPACK__imported__module__$5b$project$5d2f$server$2f$storage$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["storage"].upsertUser({
-            id: userId,
-            email: 'info@vandelftgroep.nl',
-            firstName: 'Van Delft',
-            lastName: 'Groep'
+        const session = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$simple$2d$auth$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["getSession"])(sessionToken);
+        if (!session) {
+            return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
+                authenticated: false
+            }, {
+                status: 401
+            });
+        }
+        return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
+            authenticated: true,
+            userId: session.userId
         });
-        // Create session
-        const sessionToken = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$simple$2d$auth$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["createSession"])(userId);
-        // Set cookie
-        const cookieStore = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$headers$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["cookies"])();
-        cookieStore.set('session-token', sessionToken, {
-            httpOnly: true,
-            secure: ("TURBOPACK compile-time value", "development") === 'production',
-            sameSite: 'lax',
-            maxAge: 24 * 60 * 60,
-            path: '/'
-        });
-        const response = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
-            success: true,
-            user
-        });
-        // Add aggressive cache prevention headers
-        response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate, private, max-age=0');
-        response.headers.set('Pragma', 'no-cache');
-        response.headers.set('Expires', '0');
-        return response;
     } catch (error) {
-        console.error('Login error details:', error);
-        const errorResponse = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
-            error: 'Login failed',
-            details: error instanceof Error ? error.message : 'Unknown error'
+        console.error('Auth check error:', error);
+        return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
+            authenticated: false
         }, {
-            status: 500
+            status: 401
         });
-        // Add aggressive cache prevention headers
-        errorResponse.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate, private, max-age=0');
-        errorResponse.headers.set('Pragma', 'no-cache');
-        errorResponse.headers.set('Expires', '0');
-        return errorResponse;
     }
 }
 }),
 ];
 
-//# sourceMappingURL=%5Broot-of-the-server%5D__6f4926dd._.js.map
+//# sourceMappingURL=%5Broot-of-the-server%5D__72c1683e._.js.map

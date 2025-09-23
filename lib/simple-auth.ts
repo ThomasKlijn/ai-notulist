@@ -31,7 +31,7 @@ export async function createSession(userId: string): Promise<string> {
   const sessionId = Array.from(crypto.getRandomValues(new Uint8Array(16)))
     .map(b => b.toString(16).padStart(2, '0'))
     .join('');
-  const expiresAt = new Date(Date.now() + 60 * 1000); // 1 minute - force re-login
+  const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
   
   await db.insert(sessions).values({
     sid: sessionId,
