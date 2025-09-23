@@ -89,21 +89,31 @@ export async function generateMeetingSummary(
     const isEnglish = language === 'en';
     
     const prompt = isEnglish 
-      ? `Please analyze this meeting transcription and provide a structured summary in JSON format with the following structure:
-
+      ? `Please analyze this meeting transcript and provide a structured summary in JSON format with the following structure:
 {
   "title": "Meeting title/subject",
-  "generalSummary": "A comprehensive 2-3 sentence overview of what was discussed in the meeting",
+  "generalSummary": "A neutral, objective summary of 5–7 sentences about what was discussed in the meeting",
   "keyPoints": ["List of key discussion points"],
   "decisions": ["Decisions made during the meeting"],
-  "actionItems": [{"task": "Description", "assignee": "Person name if mentioned", "dueDate": "Date if mentioned"}],
+  "actionItems": [
+    {
+      "task": "Description of the action item",
+      "assignee": "Person's name if mentioned, otherwise 'TBD'",
+      "dueDate": "Date if mentioned, otherwise 'Not specified'"
+    }
+  ],
   "participants": ["Names of people mentioned in the meeting"],
-  "duration": "Estimated meeting duration",
+  "duration": "Estimated meeting duration (or 'Not specified' if unknown)",
   "nextSteps": ["Next steps or follow-up actions"]
 }
 
+Rules:
+- If a field would otherwise be empty, fill it with 'TBD' or 'Not specified'.
+- Always respond in the same language as the transcript unless instructed otherwise.
+- Do NOT include any explanation outside of the JSON. Return JSON only.
+
 Meeting Title: ${meetingTitle}
-Transcription: ${transcription}`
+Transcript: ${transcription}`
       : `Analyseer deze meeting transcriptie en geef een gestructureerde samenvatting in JSON formaat met de volgende structuur:
 {
   "title": "Meeting titel/onderwerp",
@@ -136,7 +146,7 @@ Transcriptie: ${transcription}`;
         {
           role: "system",
           content: isEnglish 
-            ? "You are an expert meeting assistant. Analyze meeting transcriptions and provide structured, accurate summaries. Always respond with valid JSON."
+            ? "You are an expert meeting assistant. Analyze meeting transcripts and provide structured, accurate summaries.\nImportant: Always respond ONLY with valid JSON that exactly follows the requested structure."
             : "Je bent een expert meeting assistent. Analyseer meeting transcripties en geef gestructureerde, nauwkeurige samenvattingen.\nBelangrijk: Antwoord ALTIJD uitsluitend met geldige JSON die exact voldoet aan de gevraagde structuur."
         },
         {
