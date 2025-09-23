@@ -18,40 +18,26 @@ export async function POST(req: NextRequest) {
     if (username !== VALID_CREDENTIALS.username || password !== VALID_CREDENTIALS.password) {
       const errorResponse = NextResponse.json({ error: 'Invalid username or password' }, { status: 401 });
     
-    // Add aggressive cache prevention headers
-    errorResponse.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate, private, max-age=0');
-    errorResponse.headers.set('Pragma', 'no-cache');
-    errorResponse.headers.set('Expires', '0');
-    
-    return errorResponse;
+      // Add aggressive cache prevention headers
+      errorResponse.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate, private, max-age=0');
+      errorResponse.headers.set('Pragma', 'no-cache');
+      errorResponse.headers.set('Expires', '0');
+      
+      return errorResponse;
     }
 
-    // Create or get user (with fallback if database fails)
+    // Static user object - no database required
     const userId = 'vandelftgroep-user';
-    let user;
-    try {
-      // Lazy import storage to avoid crashing at startup
-      const { storage } = await import('../../../../server/storage');
-      user = await storage.upsertUser({
-        id: userId,
-        email: 'info@vandelftgroep.nl',
-        firstName: 'Van Delft',
-        lastName: 'Groep'
-      });
-    } catch (error) {
-      console.warn('Database upsert failed, using fallback user:', error);
-      // Fallback user object when database is unavailable
-      user = {
-        id: userId,
-        email: 'info@vandelftgroep.nl',
-        firstName: 'Van Delft',
-        lastName: 'Groep',
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
-    }
+    const user = {
+      id: userId,
+      email: 'info@vandelftgroep.nl',
+      firstName: 'Van Delft',
+      lastName: 'Groep',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
 
-    // Create session
+    // Create stateless session (no database required)
     const sessionToken = await createSession(userId);
 
     // Set cookie
@@ -61,7 +47,7 @@ export async function POST(req: NextRequest) {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       maxAge: 24 * 60 * 60, // 24 hours
-      path: '/',
+      path: '/'
     });
 
     const response = NextResponse.json({ success: true, user });

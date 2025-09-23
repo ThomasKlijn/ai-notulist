@@ -1,84 +1,78 @@
-// Temporary simple auth implementation to bypass @hapi/iron dependency issues
-import { storage } from "../server/storage";
-import { db } from "../server/db";
-import { sessions } from "../shared/schema";
-import { eq, lt } from "drizzle-orm";
+// Stateless authentication - no database required
+// Simple JWT-like token system for VanDelft Groep login
 
-// Require strong session secret in all environments
-const SESSION_SECRET = process.env.SESSION_SECRET || "super-secure-session-secret-key-for-vandelft-groep-ai-notulist-2025";
-if (!SESSION_SECRET) {
-  throw new Error("SESSION_SECRET environment variable is required and must be a strong secret");
-}
+// Use a secure default secret (in production, set SESSION_SECRET env var)
+const SESSION_SECRET = process.env.SESSION_SECRET || "super-secure-session-secret-key-for-vandelft-groep-ai-notulist-2025-render-deployment";
 
-// Simplified session encoding - just use base64 with session ID
-function simpleEncode(data: any): string {
+// Simple token creation with signature (JWT-like but simplified)
+function createSignedToken(data: any): string {
   const payload = JSON.stringify(data);
-  return Buffer.from(payload).toString('base64url');
+  const signature = createSignature(payload);
+  const combined = JSON.stringify({ payload, signature });
+  return Buffer.from(combined).toString('base64url');
 }
 
-function simpleDecode(token: string): any | null {
+function verifySignedToken(token: string): any | null {
   try {
-    const payload = Buffer.from(token, 'base64url').toString();
-    return JSON.parse(payload);
+    const combined = Buffer.from(token, 'base64url').toString();
+    const { payload, signature } = JSON.parse(combined);
+    
+    // Verify signature
+    const expectedSignature = createSignature(payload);
+    if (signature !== expectedSignature) {
+      return null;
+    }
+    
+    const data = JSON.parse(payload);
+    
+    // Check expiration
+    if (data.expiresAt && new Date(data.expiresAt) < new Date()) {
+      return null;
+    }
+    
+    return data;
   } catch {
     return null;
   }
 }
 
-// Session management functions
+// Simple signature creation using session secret
+function createSignature(payload: string): string {
+  const crypto = require('crypto');
+  return crypto.createHmac('sha256', SESSION_SECRET).update(payload).digest('hex');
+}
+
+// Stateless session management - no database required
 export async function createSession(userId: string): Promise<string> {
-  // Generate 32-char hex string (compatible with short DB columns)
-  const sessionId = Array.from(crypto.getRandomValues(new Uint8Array(16)))
-    .map(b => b.toString(16).padStart(2, '0'))
-    .join('');
   const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
-  
-  await db.insert(sessions).values({
-    sid: sessionId,
-    sess: { userId },
-    expire: expiresAt
-  });
-  
-  const sessionData = { sessionId, userId, expiresAt: expiresAt.toISOString() };
-  return simpleEncode(sessionData);
+  const sessionData = { 
+    userId, 
+    expiresAt: expiresAt.toISOString(),
+    createdAt: new Date().toISOString()
+  };
+  return createSignedToken(sessionData);
 }
 
 export async function getSession(token: string): Promise<{ userId: string } | null> {
   if (!token) return null;
   
-  const sessionData = simpleDecode(token);
-  if (!sessionData || !sessionData.sessionId) {
+  const sessionData = verifySignedToken(token);
+  if (!sessionData || !sessionData.userId) {
     return null;
   }
   
-  // Check if session exists and is valid
-  const [session] = await db
-    .select()
-    .from(sessions)
-    .where(eq(sessions.sid, sessionData.sessionId));
-  
-  if (!session || session.expire < new Date()) {
-    // Clean up expired session
-    if (session) {
-      await db.delete(sessions).where(eq(sessions.sid, sessionData.sessionId));
-    }
-    return null;
-  }
-  
-  const sessData = session.sess as any;
-  return { userId: sessData.userId };
+  return { userId: sessionData.userId };
 }
 
 export async function deleteSession(token: string): Promise<void> {
-  const sessionData = simpleDecode(token);
-  if (sessionData?.sessionId) {
-    await db.delete(sessions).where(eq(sessions.sid, sessionData.sessionId));
-  }
+  // With stateless tokens, we can't "delete" them server-side
+  // The client should just remove the cookie
+  // Tokens will automatically expire based on their expiration time
 }
 
-// Clean up expired sessions (called periodically)
+// No cleanup needed for stateless sessions
 export async function cleanupExpiredSessions(): Promise<void> {
-  await db.delete(sessions).where(lt(sessions.expire, new Date()));
+  // Nothing to clean up with stateless tokens
 }
 
 // Generate auth URL for Replit OAuth (simplified)
@@ -106,16 +100,25 @@ export async function exchangeCodeForUser(code: string): Promise<any> {
   };
 }
 
-// Compatibility function for authMiddleware.ts
+// Compatibility function for authMiddleware.ts - no database required
 export async function getUserFromSession(token: string): Promise<{ user: any } | null> {
   const session = await getSession(token);
   if (!session) return null;
   
-  // Get user data from storage
-  const user = await storage.getUser(session.userId);
-  if (!user) return null;
+  // Return static user for VanDelft Groep login
+  if (session.userId === 'vandelftgroep-user') {
+    const user = {
+      id: 'vandelftgroep-user',
+      email: 'info@vandelftgroep.nl',
+      firstName: 'Van Delft',
+      lastName: 'Groep',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    return { user };
+  }
   
-  return { user };
+  return null;
 }
 
 // Additional auth functions for compatibility
@@ -124,25 +127,27 @@ export function generateLogoutUrl(): string {
 }
 
 export function encryptSessionId(sessionData: any): string {
-  return simpleEncode(sessionData);
+  return createSignedToken(sessionData);
 }
 
 export function decryptSessionId(token: string): any {
-  return simpleDecode(token);
+  return verifySignedToken(token);
 }
 
 export async function handleCallback(code: string): Promise<{ sessionToken: string; user: any }> {
   const userData = await exchangeCodeForUser(code);
   
-  // Upsert user in database
-  const user = await storage.upsertUser({
+  // Static user - no database required
+  const user = {
     id: userData.id,
     email: userData.email,
     firstName: userData.name?.split(' ')[0] || '',
-    lastName: userData.name?.split(' ').slice(1).join(' ') || ''
-  });
+    lastName: userData.name?.split(' ').slice(1).join(' ') || '',
+    createdAt: new Date(),
+    updatedAt: new Date()
+  };
   
-  // Create session
+  // Create stateless session
   const sessionToken = await createSession(user.id);
   
   return { sessionToken, user };
