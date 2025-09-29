@@ -191,8 +191,8 @@ const COMPANY_USERS = {
   'klimax12-user': {
     id: 'klimax12-user',
     email: 'info@klimax12.nl',
-    firstName: 'Klimax',
-    lastName: 'Team',
+    firstName: 'Jody',
+    lastName: 'Klimax',
     companyName: 'Klimax12',
     companyId: 'klimax12'
   }
