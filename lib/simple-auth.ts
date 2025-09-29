@@ -178,18 +178,36 @@ export async function exchangeCodeForUser(code: string): Promise<any> {
   };
 }
 
+// Multi-company user configurations
+const COMPANY_USERS = {
+  'vandelftgroep-user': {
+    id: 'vandelftgroep-user',
+    email: 'info@vandelftgroep.nl',
+    firstName: 'Jordi',
+    lastName: 'van Delft',
+    companyName: 'Van Delft Groep',
+    companyId: 'vandelftgroep'
+  },
+  'klimax12-user': {
+    id: 'klimax12-user',
+    email: 'info@klimax12.nl',
+    firstName: 'Klimax',
+    lastName: 'Team',
+    companyName: 'Klimax12',
+    companyId: 'klimax12'
+  }
+} as const;
+
 // Compatibility function for authMiddleware.ts - no database required
 export async function getUserFromSession(token: string): Promise<{ user: any } | null> {
   const session = await getSession(token);
   if (!session) return null;
   
-  // Return static user for VanDelft Groep login
-  if (session.userId === 'vandelftgroep-user') {
+  // Return static user based on userId from session
+  const userConfig = COMPANY_USERS[session.userId as keyof typeof COMPANY_USERS];
+  if (userConfig) {
     const user = {
-      id: 'vandelftgroep-user',
-      email: 'info@vandelftgroep.nl',
-      firstName: 'Van Delft',
-      lastName: 'Groep',
+      ...userConfig,
       createdAt: new Date(),
       updatedAt: new Date()
     };

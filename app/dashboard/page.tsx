@@ -1,8 +1,46 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import DownloadAppButton from '../../components/DownloadAppButton';
 
+interface User {
+  id: string;
+  firstName: string;
+  lastName: string;
+  companyName: string;
+  email: string;
+}
+
 export default function Dashboard() {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await fetch('/api/auth/check');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.authenticated && data.user) {
+            setUser(data.user);
+          } else {
+            // Redirect to login if not authenticated
+            window.location.href = '/login';
+          }
+        } else {
+          // Redirect to login if auth check fails
+          window.location.href = '/login';
+        }
+      } catch (error) {
+        console.error('Error fetching user:', error);
+        window.location.href = '/login';
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, []);
   const handleLogout = async () => {
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
@@ -11,6 +49,21 @@ export default function Dashboard() {
       console.error('Logout error:', error);
     }
   };
+
+  if (loading) {
+    return (
+      <main style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        minHeight: '100vh',
+        fontSize: '18px',
+        color: '#6b7280'
+      }}>
+        Laden...
+      </main>
+    );
+  }
 
   return (
     <main style={{ textAlign: 'center', padding: '40px 20px' }}>
@@ -43,6 +96,33 @@ export default function Dashboard() {
         </button>
       </div>
       
+      {/* Welcome Message */}
+      {user && (
+        <div style={{ 
+          marginBottom: '32px',
+          padding: '20px',
+          backgroundColor: '#f0f9ff',
+          borderRadius: '12px',
+          border: '1px solid #bae6fd'
+        }}>
+          <h1 style={{ 
+            fontSize: '28px', 
+            fontWeight: '600', 
+            color: '#0f172a',
+            margin: '0 0 8px 0'
+          }}>
+            Welkom {user.firstName}!
+          </h1>
+          <p style={{ 
+            fontSize: '16px', 
+            color: '#64748b',
+            margin: '0'
+          }}>
+            {user.companyName} • {user.email}
+          </p>
+        </div>
+      )}
+
       <div style={{ marginBottom: '48px' }}>
         <h2 style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '16px', color: '#1f2937' }}>
           AI-Powered Meeting Notes

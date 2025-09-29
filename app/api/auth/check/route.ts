@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSession } from '../../../../lib/simple-auth';
+import { getSession, getUserFromSession } from '../../../../lib/simple-auth';
 import { cookies } from 'next/headers';
 
 export async function GET(req: NextRequest) {
@@ -17,7 +17,17 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ authenticated: false }, { status: 401 });
     }
 
-    return NextResponse.json({ authenticated: true, userId: session.userId });
+    // Get full user details for welcome message
+    const userResult = await getUserFromSession(sessionToken);
+    if (!userResult) {
+      return NextResponse.json({ authenticated: false }, { status: 401 });
+    }
+
+    return NextResponse.json({ 
+      authenticated: true, 
+      userId: session.userId,
+      user: userResult.user
+    });
   } catch (error) {
     console.error('Auth check error:', error);
     return NextResponse.json({ authenticated: false }, { status: 401 });

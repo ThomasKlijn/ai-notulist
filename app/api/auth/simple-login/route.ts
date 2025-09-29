@@ -5,17 +5,41 @@ import { cookies } from 'next/headers';
 // Force Node.js runtime for database operations
 export const runtime = 'nodejs';
 
-const VALID_CREDENTIALS = {
-  username: process.env.AUTH_USERNAME || 'VanDelftGroep',
-  password: process.env.AUTH_PASSWORD || 'JWVD12'
-};
+// Multi-company configuration
+const COMPANY_ACCOUNTS = {
+  'VanDelftGroep': {
+    password: process.env.AUTH_PASSWORD_VANDELFT || 'JWVD12',
+    user: {
+      id: 'vandelftgroep-user',
+      email: 'info@vandelftgroep.nl',
+      firstName: 'Jordi',
+      lastName: 'van Delft',
+      companyName: 'Van Delft Groep',
+      companyId: 'vandelftgroep'
+    }
+  },
+  'Klimax12': {
+    password: process.env.AUTH_PASSWORD_KLIMAX || 'KLIMAX2025',
+    user: {
+      id: 'klimax12-user',
+      email: 'info@klimax12.nl',
+      firstName: 'Klimax',
+      lastName: 'Team',
+      companyName: 'Klimax12',
+      companyId: 'klimax12'
+    }
+  }
+} as const;
+
+type CompanyName = keyof typeof COMPANY_ACCOUNTS;
 
 export async function POST(req: NextRequest) {
   try {
     const { username, password } = await req.json();
 
-    // Check credentials
-    if (username !== VALID_CREDENTIALS.username || password !== VALID_CREDENTIALS.password) {
+    // Check credentials against company accounts
+    const company = COMPANY_ACCOUNTS[username as CompanyName];
+    if (!company || password !== company.password) {
       const errorResponse = NextResponse.json({ error: 'Invalid username or password' }, { status: 401 });
     
       // Add aggressive cache prevention headers
@@ -26,19 +50,15 @@ export async function POST(req: NextRequest) {
       return errorResponse;
     }
 
-    // Static user object - no database required
-    const userId = 'vandelftgroep-user';
+    // Get user object from company configuration
     const user = {
-      id: userId,
-      email: 'info@vandelftgroep.nl',
-      firstName: 'Van Delft',
-      lastName: 'Groep',
+      ...company.user,
       createdAt: new Date(),
       updatedAt: new Date()
     };
 
     // Create stateless session (no database required)
-    const sessionToken = await createSession(userId);
+    const sessionToken = await createSession(user.id);
 
     // Set cookie
     const cookieStore = await cookies();
