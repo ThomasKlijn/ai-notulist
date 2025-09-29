@@ -22,10 +22,10 @@ const COMPANY_ACCOUNTS = {
     password: process.env.AUTH_PASSWORD_KLIMAX || 'JVDGK34',
     user: {
       id: 'klimax12-user',
-      email: 'info@klimax12.nl',
+      email: 'info@klimax.nl',
       firstName: 'Jody',
       lastName: 'Klimax',
-      companyName: 'Klimax12',
+      companyName: 'Klimax Installatiebedrijven',
       companyId: 'klimax12'
     }
   }

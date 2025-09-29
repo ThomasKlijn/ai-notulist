@@ -190,10 +190,10 @@ const COMPANY_USERS = {
   },
   'klimax12-user': {
     id: 'klimax12-user',
-    email: 'info@klimax12.nl',
+    email: 'info@klimax.nl',
     firstName: 'Jody',
     lastName: 'Klimax',
-    companyName: 'Klimax12',
+    companyName: 'Klimax Installatiebedrijven',
     companyId: 'klimax12'
   }
 } as const;
